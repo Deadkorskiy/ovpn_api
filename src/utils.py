@@ -32,4 +32,5 @@ def auth_required(f):
         if request.headers.get(ACCESS_HEADER_NAME) not in ACCESS_HEADERS:
             return json_custom_response(errors_occured=[{'message': 'Access denied'}], code=403)
         return f(*args, **kwargs)
+    wrapper.__name__ = f.__name__
     return wrapper

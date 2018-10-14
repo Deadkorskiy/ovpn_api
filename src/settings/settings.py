@@ -4,10 +4,14 @@ CLUSTERS_ABS_DIR_PATH = '/mnt/5FDF25D5580592D3/Lab/onetimevpn/opt/deploy/docker/
 
 CLUSTER_POSTFIX_PATH = 'openvpn'
 
-ACCESS_HEADER_NAME = "Api-Key"
+ACCESS_HEADER_NAME = "api-key"
 
 ACCESS_HEADERS = [
     "c18d6f66-d3bc-4ca3-8f1c-ea7235f04681"
+]
+
+IGNORED_CLIENT_NAMES = [    # low case only
+    'server'
 ]
 
 SECRET_KEY = 'aksjdfkj385602836547hajkdsfvn;skjdf;kjhIUGTUYOAD08544967597%(^%976fgawgef'

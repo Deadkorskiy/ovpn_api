@@ -20,8 +20,8 @@ def get_application() -> Flask:
 
 
 def __register_blueprint__():
-    from endpoint.openvpn.client import client_bp
-    get_application().register_blueprint(client_bp)
+    from src.endpoint.openvpn.client import openvpn_client_bp
+    get_application().register_blueprint(openvpn_client_bp)
 
 
 def __register_error_handler__() -> None:
@@ -90,10 +90,10 @@ def __register_error_handler__() -> None:
     get_application().register_error_handler(HTTPVersionNotSupported, error_handler)
 
 
-
 def bootstrap() -> None:
     logging.config.dictConfig(settings.LOGGING_CONFIGURATION)
     get_application()
-    __register_error_handler__()
     __register_blueprint__()
+    __register_error_handler__()
+
 
