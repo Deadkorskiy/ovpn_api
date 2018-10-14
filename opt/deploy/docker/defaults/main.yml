@@ -1,0 +1,20 @@
+---
+# zabbix /etc/zabbix/zabbix_agentd.conf
+zabbix_agent_server: 206.189.84.23
+
+# application
+#application_settings_dest: "/home/{{ application_name }}/current/src/rest/settings/local_settings.py"
+vpn_id_rsa_dest_path: "/home/{{ application_name }}/current/etc/id_rsa"
+
+# deploy
+ansistrano_allow_anonymous_stats: no
+ansistrano_deploy_from: "{{ playbook_dir }}../../../../"  # root_dir (onetimevpn)
+ansistrano_deploy_to: "{{ destination_project_dir }}/application/ansistrano"
+ansistrano_keep_releases: 0
+ansistrano_deploy_via: git
+ansistrano_git_repo: git@github.com:Deadkorskiy/onetimevpn_vpn.git
+ansistrano_git_branch: master
+ansistrano_git_refspec: "+refs/heads/*:refs/remotes/origin/*"
+ansistrano_git_repo_tree: ""
+ansistrano_git_identity_key_remote_path: ""
+ansistrano_git_identity_key_path: "{{ ansible_ssh_private_key_file }}"
