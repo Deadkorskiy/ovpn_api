@@ -1,0 +1,41 @@
+version: '3.3'
+services:
+    gunicorn:
+        build: .
+        container_name: gunicorn
+        restart: always
+        ports:
+            - "5000:5000"
+        dns:
+            - "8.8.8.8"
+            - "8.8.4.4"
+        volumes:
+            - ./src:/code/src
+            - ./etc:/code/etc
+            - ~/onetimevpn/docker_persistent/var:/code/var
+        command: bash -c "cd /code && gunicorn --name=gunicorn --workers=2 src.rest.services.http_api.application -b 0.0.0.0:5000"
+        network_mode: host
+
+    nginx:
+        image: nginx
+        network_mode: host
+        restart: always
+        container_name: "nginx"
+        volumes:
+            - ./src:/code/src
+#            - ./etc:/code/etc
+#            - ./var:/code/var
+            - ./opt/deploy/docker/files/staging/ssl/nginx-selfsigned.key:/ssl/key.key
+            - ./opt/deploy/docker/files/staging/ssl/nginx-selfsigned.crt:/ssl/crt.crt
+            - ./opt/deploy/docker/files/staging/site/nginx.conf:/etc/nginx/nginx.conf
+            - ~/onetimevpn/docker_persistent/var/log/nginx:/var/log/nginx
+        ports:
+            - "80:80"
+            - "443:443"
+        depends_on:
+            - gunicorn
+#        environment:
+#            - NGINX_HOST=foobar.com
+#            - NGINX_PORT=80
+#        command: [nginx-debug, '-g', 'daemon off;']
+

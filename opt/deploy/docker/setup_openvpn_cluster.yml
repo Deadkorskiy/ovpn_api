@@ -1,0 +1,64 @@
+  # Tested at:
+# Ubuntu 16.04.4
+# Пересылает папку openvpn с настройками кластера на сервер в папку /home/deploy/onetimevpn/docker_persistent/openvpn/c2
+# а также start.sh, openvpn-install.sh, docker-compose.yml и Dockerfile
+
+# !!!! Эту штуку нельзя выполнять дважды - иначе она затрет все данные пользователей !!!
+---
+- name: Sending openvpn cluster data
+  hosts: c1
+  tasks:
+    - name: Creating clusters archive
+      sudo: no
+      delegate_to: 127.0.0.1
+      raw: "cd {{ cluster_vpn_settings_dir_source }} && tar -zcvf vpn.tar.gz *"
+
+    - name: Removing destination dir
+      raw: "rm {{ cluster_vpn_settings_dir_dest }} -rf > /dev/null"
+
+    - name: Creating destination dir
+      raw: "mkdir -p {{ cluster_vpn_settings_dir_dest }}"
+
+    - name: Send clusters archive
+      copy:
+        src: "{{ cluster_vpn_settings_dir_source }}/vpn.tar.gz"
+        dest: "{{ cluster_vpn_settings_dir_dest }}/vpn.tar.gz"
+
+    - name: Extracting clusters archive
+      raw: "tar -xzf {{ cluster_vpn_settings_dir_dest }}/vpn.tar.gz -C {{ cluster_vpn_settings_dir_dest }}/ "
+
+    - name: Removing clusters archive
+      raw: "rm {{ cluster_vpn_settings_dir_dest }}/vpn.tar.gz"
+
+    - name: Deliting local openvpn.tar.gz
+      sudo: no
+      delegate_to: 127.0.0.1
+      raw: "rm {{ cluster_vpn_settings_dir_source }}/vpn.tar.gz"
+
+    - name: Send Dockerfile
+      copy:
+        src: "{{ cluster_vpn_settings_dir_source }}/../Dockerfile"
+        dest: "{{ cluster_vpn_settings_dir_dest }}/Dockerfile"
+
+    - name: Send docker-compose.yml
+      copy:
+        src: "{{ cluster_vpn_settings_dir_source }}/../docker-compose.yml"
+        dest: "{{ cluster_vpn_settings_dir_dest }}/docker-compose.yml"
+
+    - name: Send openvpn-install.sh
+      copy:
+        src: "{{ cluster_vpn_settings_dir_source }}/../openvpn-install.sh"
+        dest: "{{ cluster_vpn_settings_dir_dest }}/openvpn-install.sh"
+
+    - name: Send openvpn-install.sh
+      copy:
+        src: "{{ cluster_vpn_settings_dir_source }}/../start.sh"
+        dest: "{{ cluster_vpn_settings_dir_dest }}/start.sh"
+
+    - name: Allowing 443
+      sudo: yes
+      raw: "ufw allow 443"
+
+    - name: Lauching openvpn
+      sudo: yes
+      raw: "cd {{ cluster_vpn_settings_dir_dest }} && docker-compose restart"
