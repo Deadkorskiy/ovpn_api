@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 import os
 import logging
-from settings import settings
+from src.settings import settings
 from src.utils import json_custom_response, auth_required
 from fabric.api import local
 from fabric.api import settings as fabric_settings
