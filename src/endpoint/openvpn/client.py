@@ -25,10 +25,10 @@ def build_client(cluster_name, unique_client_name):
     if not os.path.exists(cluster_dir) or not os.path.isdir(cluster_dir):
         return json_custom_response(errors_occured=[{'message': 'Invalid cluster'}], code=400)
 
+    client_common_path = os.path.join(cluster_dir, 'client-common.txt')
     cluster_easy_rsa_path = os.path.join(cluster_dir, 'easy-rsa')
     server_ca_path = os.path.join(cluster_easy_rsa_path, 'pki/ca.crt')
-    server_ta_key_path = os.path.join(cluster_dir, 'ta.key')
-    client_common_path = os.path.join(cluster_dir, 'client-common.txt')
+    server_ta_key_path = os.path.join(cluster_easy_rsa_path, 'pki/ta.key')
 
     # если клиент уже есть - отдадим то что есть, если нет - создадим
     client_crt_path = os.path.join(cluster_dir, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
@@ -158,6 +158,10 @@ def load_client(cluster_name, unique_client_name):
     cluster_dir = os.path.join(settings.CLUSTERS_ABS_DIR_PATH, str(cluster_name), settings.CLUSTER_POSTFIX_PATH)
     if not os.path.exists(cluster_dir) or not os.path.isdir(cluster_dir):
         return json_custom_response(errors_occured=[{'message': 'Invalid cluster'}], code=400)
+
+    client_crt_path = os.path.join(cluster_dir, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
+    if os.path.exists(client_crt_path):
+        return json_custom_response(errors_occured=[{'message': 'Client already exists'}], code=400)
 
     cluster_easy_rsa_path = os.path.join(cluster_dir, 'easy-rsa')
 
