@@ -11,9 +11,9 @@ import re
 openvpn_client_bp = Blueprint('openvpn_client_bp', __name__, url_prefix='/api/openvpn/client')
 
 
-@openvpn_client_bp.route("/build/<cluster_name>/<unique_client_name>", methods=['POST'])
+@openvpn_client_bp.route("/build/<unique_client_name>", methods=['POST'])
 @auth_required
-def build_client(cluster_name, unique_client_name):
+def build_client(unique_client_name):
     """Создает ovpn клиента"""
 
     unique_client_name = str(unique_client_name)
@@ -21,17 +21,13 @@ def build_client(cluster_name, unique_client_name):
         return json_custom_response(errors_occured=[{'message': 'Client not found'}], code=400)
     is_new = True
 
-    cluster_dir = os.path.join(settings.CLUSTERS_ABS_DIR_PATH, str(cluster_name), settings.CLUSTER_POSTFIX_PATH)
-    if not os.path.exists(cluster_dir) or not os.path.isdir(cluster_dir):
-        return json_custom_response(errors_occured=[{'message': 'Invalid cluster'}], code=400)
-
-    client_common_path = os.path.join(cluster_dir, 'client-common.txt')
-    cluster_easy_rsa_path = os.path.join(cluster_dir, 'easy-rsa')
+    client_common_path = os.path.join(settings.OPENVPN_PATH, 'client-common.txt')
+    cluster_easy_rsa_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa')
     server_ca_path = os.path.join(cluster_easy_rsa_path, 'pki/ca.crt')
     server_ta_key_path = os.path.join(cluster_easy_rsa_path, 'pki/ta.key')
 
     # если клиент уже есть - отдадим то что есть, если нет - создадим
-    client_crt_path = os.path.join(cluster_dir, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
+    client_crt_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
     if os.path.exists(client_crt_path):
         is_new = False
     else:
@@ -43,7 +39,6 @@ def build_client(cluster_name, unique_client_name):
                 logging.getLogger(__file__).error('Error during client {} building:{}'.format(unique_client_name, str(e)))
                 return json_custom_response(errors_occured=[{'message': 'Building error'}], code=500)
 
-
     client_crt_path = os.path.join(cluster_easy_rsa_path, 'pki/issued/{}.crt'.format(unique_client_name))
     client_key_path = os.path.join(cluster_easy_rsa_path, 'pki/private/{}.key'.format(unique_client_name))
     client_req_path = os.path.join(cluster_easy_rsa_path, 'pki/reqs/{}.req'.format(unique_client_name))
@@ -51,8 +46,7 @@ def build_client(cluster_name, unique_client_name):
         os.path.isfile(client_crt_path),
         os.path.isfile(client_key_path)
     ]):
-        logging.getLogger(__file__).error('Client files was not created. cluster_name:{} unique_client_name:{}'. format(
-            str(cluster_name),
+        logging.getLogger(__file__).error('Client files was not created. unique_client_name:{}'. format(
             str(unique_client_name))
         )
         return json_custom_response(errors_occured=[{'message': 'An error occured during client creating'}], code=500)
@@ -72,24 +66,20 @@ def build_client(cluster_name, unique_client_name):
     )
 
 
-@openvpn_client_bp.route("/revoke/<cluster_name>/<unique_client_name>", methods=['POST'])
+@openvpn_client_bp.route("/revoke/<unique_client_name>", methods=['POST'])
 @auth_required
-def revoke_client(cluster_name, unique_client_name):
+def revoke_client(unique_client_name):
     """Отзывает ovpn клиента"""
 
     unique_client_name = str(unique_client_name)
     if unique_client_name.lower() in settings.IGNORED_CLIENT_NAMES:
         return json_custom_response(errors_occured=[{'message': 'Client not found'}], code=400)
 
-    cluster_dir = os.path.join(settings.CLUSTERS_ABS_DIR_PATH, str(cluster_name), settings.CLUSTER_POSTFIX_PATH)
-    if not os.path.exists(cluster_dir) or not os.path.isdir(cluster_dir):
-        return json_custom_response(errors_occured=[{'message': 'Invalid cluster'}], code=400)
-
-    client_crt_path = os.path.join(cluster_dir, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
+    client_crt_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
     if not os.path.exists(client_crt_path):
         return json_custom_response(errors_occured=[{'message': 'Client not found'}], code=400)
 
-    cluster_easy_rsa_path = os.path.join(cluster_dir, 'easy-rsa')
+    cluster_easy_rsa_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa')
 
     with fabric_settings(abort_exception=Exception):
         try:
@@ -109,24 +99,20 @@ def revoke_client(cluster_name, unique_client_name):
     )
 
 
-@openvpn_client_bp.route("/remove/<cluster_name>/<unique_client_name>", methods=['POST'])
+@openvpn_client_bp.route("/remove/<unique_client_name>", methods=['POST'])
 @auth_required
-def remove_client(cluster_name, unique_client_name):
+def remove_client(unique_client_name):
     """Удаляет ovpn клиента"""
 
     unique_client_name = str(unique_client_name)
     if unique_client_name.lower() in settings.IGNORED_CLIENT_NAMES:
         return json_custom_response(errors_occured=[{'message': 'Client not found'}], code=400)
 
-    cluster_dir = os.path.join(settings.CLUSTERS_ABS_DIR_PATH, str(cluster_name), settings.CLUSTER_POSTFIX_PATH)
-    if not os.path.exists(cluster_dir) or not os.path.isdir(cluster_dir):
-        return json_custom_response(errors_occured=[{'message': 'Invalid cluster'}], code=400)
-
-    client_crt_path = os.path.join(cluster_dir, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
+    client_crt_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
     if not os.path.exists(client_crt_path):
         return json_custom_response(errors_occured=[{'message': 'Client not found'}], code=400)
 
-    cluster_easy_rsa_path = os.path.join(cluster_dir, 'easy-rsa')
+    cluster_easy_rsa_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa')
 
     with fabric_settings(abort_exception=Exception):
         try:
@@ -146,24 +132,20 @@ def remove_client(cluster_name, unique_client_name):
     )
 
 
-@openvpn_client_bp.route("/load/<cluster_name>/<unique_client_name>", methods=['POST'])
+@openvpn_client_bp.route("/load/<unique_client_name>", methods=['POST'])
 @auth_required
-def load_client(cluster_name, unique_client_name):
+def load_client(unique_client_name):
     """Загружает ovpn клиента"""
 
     unique_client_name = str(unique_client_name)
     if unique_client_name.lower() in settings.IGNORED_CLIENT_NAMES:
         return json_custom_response(errors_occured=[{'message': 'Client not found'}], code=400)
 
-    cluster_dir = os.path.join(settings.CLUSTERS_ABS_DIR_PATH, str(cluster_name), settings.CLUSTER_POSTFIX_PATH)
-    if not os.path.exists(cluster_dir) or not os.path.isdir(cluster_dir):
-        return json_custom_response(errors_occured=[{'message': 'Invalid cluster'}], code=400)
-
-    client_crt_path = os.path.join(cluster_dir, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
+    client_crt_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
     if os.path.exists(client_crt_path):
         return json_custom_response(errors_occured=[{'message': 'Client already exists'}], code=400)
 
-    cluster_easy_rsa_path = os.path.join(cluster_dir, 'easy-rsa')
+    cluster_easy_rsa_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa')
 
     body = request.get_json()
     key = body.get('data', {}).get('client_key', '')
@@ -188,24 +170,20 @@ def load_client(cluster_name, unique_client_name):
     )
 
 
-@openvpn_client_bp.route("/restore/<cluster_name>/<unique_client_name>", methods=['POST'])
+@openvpn_client_bp.route("/restore/<unique_client_name>", methods=['POST'])
 @auth_required
-def restore_client(cluster_name, unique_client_name):
+def restore_client(unique_client_name):
     """Восстанавливает доступ ovpn клиенту"""
 
     unique_client_name = str(unique_client_name)
     if unique_client_name.lower() in settings.IGNORED_CLIENT_NAMES:
         return json_custom_response(errors_occured=[{'message': 'Client not found'}], code=400)
 
-    cluster_dir = os.path.join(settings.CLUSTERS_ABS_DIR_PATH, str(cluster_name), settings.CLUSTER_POSTFIX_PATH)
-    if not os.path.exists(cluster_dir) or not os.path.isdir(cluster_dir):
-        return json_custom_response(errors_occured=[{'message': 'Invalid cluster'}], code=400)
-
-    client_crt_path = os.path.join(cluster_dir, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
+    client_crt_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
     if not os.path.exists(client_crt_path):
         return json_custom_response(errors_occured=[{'message': 'Client not found'}], code=400)
 
-    cluster_easy_rsa_path = os.path.join(cluster_dir, 'easy-rsa')
+    cluster_easy_rsa_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa')
     index_txt_path = os.path.join(cluster_easy_rsa_path, 'pki', 'index.txt')
 
     with fabric_settings(abort_exception=Exception):
@@ -248,7 +226,11 @@ def restore_client(cluster_name, unique_client_name):
         code=200
     )
 
-
+# sudo('HOST="127.0.0.1 7505" && CMD="kill {}" && '
+#                      '(echo open "$HOST" && sleep 2 && echo "$CMD" && sleep 2 && echo "exit") | telnet'.format(client_name),
+#                      warn_only=True,
+#                      timeout=TIMEOUT
+#                     )
 
 #
 # # restart

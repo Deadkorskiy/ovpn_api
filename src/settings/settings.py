@@ -1,8 +1,6 @@
 import os
 
-CLUSTERS_ABS_DIR_PATH = '/mnt/5FDF25D5580592D3/Lab/onetimevpn/opt/deploy/docker/files/staging/vpn/openvpn'
-
-CLUSTER_POSTFIX_PATH = 'openvpn'
+OPENVPN_PATH = '/etc/openvpn'
 
 ACCESS_HEADER_NAME = "api-key"
 
