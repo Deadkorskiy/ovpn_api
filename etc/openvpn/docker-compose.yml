@@ -1,0 +1,37 @@
+version: '2'
+services:
+    openvpn:
+        container_name: openvpn
+        restart: always
+        build:
+            context: ../../
+            dockerfile: $PWD/Dockerfile
+        image: openvpn
+        dns:
+            - "8.8.8.8"
+            - "8.8.4.4"
+        volumes:
+            - ../../src:/code/src
+            - ../../etc:/code/etc
+            - ../../var:/code/var
+
+            - ../../opt/deploy/docker/files/staging/vpn/openvpn/c3/openvpn:/etc/openvpn
+        network_mode: host
+        ports:
+            - 0.0.0.0:5000:5000
+            - 0.0.0.0:443:443
+        privileged: true
+
+
+    nginx:
+        image: nginx
+        network_mode: host
+        restart: always
+        container_name: "nginx"
+        volumes:
+            - ../../etc/nginx.conf:/etc/nginx/nginx.conf
+            - ../../var/log/nginx:/var/log/nginx
+        ports:
+            - "8080:8080"
+        depends_on:
+            - openvpn

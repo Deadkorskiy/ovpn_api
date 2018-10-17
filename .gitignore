@@ -133,7 +133,6 @@ etc/id_rsa
 opt/cluster_generator/openvpn/cluster_openvpn/**/**
 opt/cluster_generator/openvpn/openvpn/**/**
 
-docker-compose.yml
 
 opt/deploy/docker/files/production/
 opt/deploy/docker/inventories/production.yml
