@@ -1,6 +1,13 @@
 import os
 
+
+SRC_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
+TMP_OUTPUT_DIR = os.path.join(SRC_ROOT, 'var', 'tmp_output')
+
 OPENVPN_PATH = '/etc/openvpn'
+
+OPENVPN_TELNET_MANAGEMENT = '127.0.0.1 7505'
 
 ACCESS_HEADER_NAME = "api-key"
 
@@ -15,6 +22,12 @@ IGNORED_CLIENT_NAMES = [    # low case only
 SECRET_KEY = 'aksjdfkj385602836547hajkdsfvn;skjdf;kjhIUGTUYOAD08544967597%(^%976fgawgef'
 
 DEBUG = False
+
+HOST = '127.0.0.1'
+
+PORT = 5000
+
+SENTRY_DSN = ''
 
 LOGGING_CONFIGURATION = {
     "version": 1,
@@ -31,15 +44,29 @@ LOGGING_CONFIGURATION = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "level": "DEBUG",
+            "level": "INFO",
             "formatter": "advanced",
             "stream": "ext://sys.stdout"
-        }
+        },
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "ERROR",
+            "formatter": "advanced",
+            "filename": os.path.abspath(os.path.join(SRC_ROOT, os.path.join(SRC_ROOT, 'var', 'log', 'api.log'))),
+            "maxBytes": 10485760,
+            "backupCount": 20,
+            "encoding": "utf8"
+        },
+        # 'sentry': {
+        #     'level': 'DEBUG',
+        #     'class': 'raven.handlers.logging.SentryHandler',
+        #     'dsn': SENTRY_DSN,
+        # }
     },
     "loggers": {
         '': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
         },
     }
 }

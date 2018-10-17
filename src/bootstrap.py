@@ -23,6 +23,9 @@ def __register_blueprint__():
     from src.endpoint.openvpn.client import openvpn_client_bp
     get_application().register_blueprint(openvpn_client_bp)
 
+    from src.endpoint.openvpn.management import openvpn_management_bp
+    get_application().register_blueprint(openvpn_management_bp)
+
 
 def __register_error_handler__() -> None:
     from .error_handler import error_handler

@@ -15,6 +15,6 @@ application = get_application()
 if __name__ == '__main__':
         application.run(
             debug=settings.DEBUG,
-            host='127.0.0.1',
-            port=5000
+            host=settings.HOST,
+            port=settings.PORT
         )
