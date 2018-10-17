@@ -3,7 +3,7 @@ dev tun
 proto tcp
 sndbuf 0
 rcvbuf 0
-remote 178.62.59.224 443
+remote 0.0.0.0 1194
 resolv-retry infinite
 nobind
 persist-key
