@@ -4,15 +4,8 @@ RUN apt-get update -y
 
 # OPENVPN
 RUN apt-get install -y openvpn iptables openssl ca-certificates
-
-# EXPOSE 1194 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# CHECK LOGS IN VAR
-
-EXPOSE 443
-
 ADD etc/openvpn/start.sh start.sh
 RUN ["chmod", "+x", "/start.sh"]
-
 
 # API
 RUN apt-get install -y software-properties-common
@@ -23,8 +16,10 @@ RUN python3.6 -m pip install wheel
 RUN mkdir /code/src /code/etc /code/var -p;
 ADD etc/ /code/etc
 RUN python3.6 -m pip install -r /code/etc/requirements.txt
-EXPOSE 5000
 
+#NGINX
+RUN apt-get install -y nginx
+ADD etc/nginx.conf /etc/nginx/nginx.conf
 
 # LAUNCHING
 RUN apt-get install -y supervisor

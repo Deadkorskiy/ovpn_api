@@ -13,25 +13,13 @@ services:
         volumes:
             - ../../src:/code/src
             - ../../etc:/code/etc
+
+            - ../../opt/deploy/docker/files/staging/vpn/openvpn/c1/openvpn:/etc/openvpn
+
             - ../../var:/code/var
-
-            - ../../opt/deploy/docker/files/staging/vpn/openvpn/c3/openvpn:/etc/openvpn
-        network_mode: host
-        ports:
-            - 0.0.0.0:5000:5000
-            - 0.0.0.0:443:443
-        privileged: true
-
-
-    nginx:
-        image: nginx
-        network_mode: host
-        restart: always
-        container_name: "nginx"
-        volumes:
-            - ../../etc/nginx.conf:/etc/nginx/nginx.conf
             - ../../var/log/nginx:/var/log/nginx
+            - ../../var/log/supervisord:/var/log/supervisord
         ports:
-            - "8080:8080"
-        depends_on:
-            - openvpn
+            - 0.0.0.0:443:1194       # OPENVPN
+            - 0.0.0.0:8080:8080     # API MANAGEMENT
+        privileged: true
