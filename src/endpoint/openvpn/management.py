@@ -11,7 +11,7 @@ import uuid
 openvpn_management_bp = Blueprint('openvpn_management_bp', __name__, url_prefix='/api/openvpn/management')
 
 
-@openvpn_management_bp.route("/load-stats/", methods=['GET'])
+@openvpn_management_bp.route("/load-stats/", methods=['POST'])
 @auth_required
 def load_stats():
     """Кол-во подклченных пользователей"""
@@ -53,7 +53,7 @@ def load_stats():
             logging.getLogger(__file__).error('Error during remove {}:{}'.format(output_tmp_file_name, str(e2)))
 
 
-@openvpn_management_bp.route("/restart/", methods=['GET'])
+@openvpn_management_bp.route("/restart/", methods=['POST'])
 @auth_required
 def restart():
     """Кол-во подклченных пользователей"""
