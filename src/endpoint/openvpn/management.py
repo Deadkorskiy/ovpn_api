@@ -21,7 +21,7 @@ def load_stats():
         'tmp_load-stats_output_{}.txt'.format(str(uuid.uuid4()))
 
     )
-    cmd = """timeout 10 bash -c 'HOST="{0}" && CMD="load-stats" && (echo open "$HOST" && sleep 2 && echo "$CMD" && sleep 2 && echo "exit") | telnet' > {1}""".format(
+    cmd = """timeout 7 bash -c 'HOST="{0}" && CMD="load-stats" && (echo open "$HOST" && sleep 2 && echo "$CMD" && sleep 2 && echo "exit") | telnet' > {1}""".format(
         settings.OPENVPN_TELNET_MANAGEMENT,
         output_tmp_file_name
     )

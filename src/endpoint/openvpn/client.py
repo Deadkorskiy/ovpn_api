@@ -6,6 +6,7 @@ from src.utils import json_custom_response, auth_required
 from fabric.api import local
 from fabric.api import settings as fabric_settings
 import re
+import uuid
 
 
 openvpn_client_bp = Blueprint('openvpn_client_bp', __name__, url_prefix='/api/openvpn/client')
@@ -226,12 +227,51 @@ def restore_client(unique_client_name):
         code=200
     )
 
-# sudo('HOST="127.0.0.1 7505" && CMD="kill {}" && '
-#                      '(echo open "$HOST" && sleep 2 && echo "$CMD" && sleep 2 && echo "exit") | telnet'.format(client_name),
-#                      warn_only=True,
-#                      timeout=TIMEOUT
-#                     )
 
-#
-# # restart
-# # kick
+@openvpn_client_bp.route("/kick/<unique_client_name>", methods=['POST'])
+@auth_required
+def kick_client(unique_client_name):
+    """Отключает пользователья от сервера"""
+
+    unique_client_name = str(unique_client_name)
+    if unique_client_name.lower() in settings.IGNORED_CLIENT_NAMES:
+        return json_custom_response(errors_occured=[{'message': 'Client not found'}], code=400)
+
+    output = ''
+    output_tmp_file_name = os.path.join(
+        settings.TMP_OUTPUT_DIR,
+        'tmp_kill_{}_output_{}.txt'.format(unique_client_name, str(uuid.uuid4()))
+
+    )
+    cmd = """timeout 7 bash -c 'HOST="{0}" && CMD="kill {1}" && (echo open "$HOST" && sleep 2 && echo "$CMD" && sleep 2 && echo "exit") | telnet' > {2}""".format(
+        settings.OPENVPN_TELNET_MANAGEMENT,
+        unique_client_name,
+        output_tmp_file_name
+    )
+
+    try:
+        with fabric_settings(abort_exception=Exception):
+            try:
+                # Эта штука работает, но всегда падает из-за exit и timeout по этому выхлоп вытягивается через файл
+                local(cmd)
+            except Exception:
+                with open(output_tmp_file_name, 'r') as f:
+                    output = f.read()
+
+        return json_custom_response(
+            data={
+                'raw': str(output)
+            },
+            code=200
+        )
+    except Exception as e1:
+        logging.getLogger(__file__).error('Error during kill {}:{}'.format(output_tmp_file_name, str(e1)))
+        return json_custom_response(
+            errors_occured=[{'message': 'Kick error', 'Internal error': str(e1)}],
+            code=500
+        )
+    finally:
+        try:
+            os.remove(output_tmp_file_name)
+        except Exception as e2:
+            logging.getLogger(__file__).error('Error during remove {}:{}'.format(output_tmp_file_name, str(e2)))
