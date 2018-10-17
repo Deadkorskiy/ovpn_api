@@ -1,0 +1,10 @@
+version: '2'
+services:
+  openvpn:
+    container_name: openvpn
+    build: .
+    image: openvpn
+    volumes:
+      - ./openvpn:/etc/openvpn
+      - ./openvpn-install.sh:/openvpn-install.sh
+    privileged: true

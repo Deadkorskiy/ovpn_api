@@ -55,7 +55,7 @@ newclient () {
 	cat /etc/openvpn/easy-rsa/pki/private/$1.key >> ~/$1.ovpn
 	echo "</key>" >> ~/$1.ovpn
 	echo "<tls-auth>" >> ~/$1.ovpn
-	cat /etc/openvpn/ta.key >> ~/$1.ovpn
+	cat /etc/openvpn/easy-rsa/pki/ta.key >> ~/$1.ovpn
 	echo "</tls-auth>" >> ~/$1.ovpn
 }
 
@@ -72,18 +72,10 @@ else
 	echo ""
 	echo "First I need to know the IPv4 address of the network interface you want OpenVPN"
 	echo "listening to."
-	# Autodetect IP address and pre-fill for the user
-	IP=$(ip addr | grep 'inet' | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -1)
-
-	echo "IP=" $IP
-	echo "PROTOCOL=" tcp
-	echo "PORT=" 1194
-	echo "DNS=" 4
-	echo "CLIENT=" client
 
 	IP=0.0.0.0
 	PROTOCOL=tcp
-	PORT=443
+	PORT=1194
 	DNS=4
 	CLIENT=client
 
@@ -128,24 +120,25 @@ else
 	./easyrsa build-client-full $CLIENT nopass
 	EASYRSA_CRL_DAYS=3650 ./easyrsa gen-crl
 	# Move the stuff we need
-	cp pki/ca.crt pki/private/ca.key pki/dh.pem pki/issued/server.crt pki/private/server.key pki/crl.pem /etc/openvpn
+	# cp pki/ca.crt pki/private/ca.key pki/dh.pem pki/issued/server.crt pki/private/server.key pki/crl.pem /etc/openvpn
 	# CRL is read with each client connection, when OpenVPN is dropped to nobody
-	chown nobody:$GROUPNAME /etc/openvpn/crl.pem
+	chown nobody:$GROUPNAME /etc/openvpn/easy-rsa/pki/crl.pem
 	# Generate key for tls-auth
-	openvpn --genkey --secret /etc/openvpn/ta.key
+	openvpn --genkey --secret /etc/openvpn/easy-rsa/pki/ta.key
 	# Generate server.conf
 	echo "port $PORT
 proto $PROTOCOL
 dev tun
 sndbuf 0
 rcvbuf 0
-ca /etc/openvpn/ca.crt
-cert /etc/openvpn/server.crt
-key /etc/openvpn/server.key
-dh /etc/openvpn/dh.pem
+ca /etc/openvpn/easy-rsa/pki/ca.crt
+cert /etc/openvpn/easy-rsa/pki/issued/server.crt
+key /etc/openvpn/easy-rsa/pki/private/server.key
+dh /etc/openvpn/easy-rsa/pki/dh.pem
 auth SHA512
-tls-auth /etc/openvpn/ta.key 0
+tls-auth /etc/openvpn/easy-rsa/pki/ta.key 0
 topology subnet
+management 0.0.0.0 7505
 server 10.8.0.0 255.255.255.0
 ifconfig-pool-persist ipp.txt" > /etc/openvpn/server.conf
 	echo 'push "redirect-gateway def1 bypass-dhcp"' >> /etc/openvpn/server.conf
@@ -190,7 +183,7 @@ persist-key
 persist-tun
 status /etc/openvpn/openvpn-status.log
 verb 3
-crl-verify /etc/openvpn/crl.pem" >> /etc/openvpn/server.conf
+crl-verify /etc/openvpn/easy-rsa/pki/crl.pem" >> /etc/openvpn/server.conf
 	# Enable net.ipv4.ip_forward for the system
 	sed -i '/\<net.ipv4.ip_forward\>/c\net.ipv4.ip_forward=1' /etc/sysctl.conf
 	if ! grep -q "\<net.ipv4.ip_forward\>" /etc/sysctl.conf; then
