@@ -60,6 +60,9 @@
     - name: Creating dirs
       raw: "mkdir -p {{ ansistrano_deploy_to }} && mkdir -p {{ docker_persistent_dir }} && mkdir -p {{ vpn_data_dest_dir }}"
 
+    - name: Chown dirs
+      raw: "chown {{ansible_user}}:{{ansible_user}} -R {{ ansistrano_deploy_to }} && chown {{ansible_user}}:{{ansible_user}} -R  {{ docker_persistent_dir }} && chown {{ansible_user}}:{{ansible_user}} -R  {{ vpn_data_dest_dir }}"
+
     - name: Deploy complete
       debug:
         msg: "{{ ansible_host }} Deploy complete"

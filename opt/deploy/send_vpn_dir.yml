@@ -1,0 +1,38 @@
+# пересылает vpn файлы на сервер
+
+# Tested at:
+# Ubuntu 16.04
+# Ubuntu 18.04
+
+# !!!! Эту штуку нельзя выполнять дважды - иначе она затрет все данные пользователей !!!
+
+---
+- name: Sending vpn cluster data
+  hosts: c1
+  tasks:
+    - name: Creating clusters archive
+      sudo: no
+      delegate_to: 127.0.0.1
+      raw: "cd {{ vpn_data_src_dir }} && tar -zcvf vpn.tar.gz *"
+
+    - name: Removing destination dir
+      raw: "rm {{ vpn_data_dest_dir }} -rf > /dev/null"
+
+    - name: Creating destination dir
+      raw: "mkdir -p {{ vpn_data_dest_dir }}"
+
+    - name: Send clusters archive
+      copy:
+        src: "{{ vpn_data_src_dir }}/vpn.tar.gz"
+        dest: "{{ vpn_data_dest_dir }}/vpn.tar.gz"
+
+    - name: Extracting clusters archive
+      raw: "tar -xzf {{ vpn_data_dest_dir }}/vpn.tar.gz -C {{ vpn_data_dest_dir }}/ "
+
+    - name: Removing clusters archive
+      raw: "rm {{ vpn_data_dest_dir }}/vpn.tar.gz"
+
+    - name: Deliting local openvpn.tar.gz
+      sudo: no
+      delegate_to: 127.0.0.1
+      raw: "rm {{ vpn_data_src_dir }}/vpn.tar.gz"

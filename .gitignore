@@ -35,7 +35,7 @@ coverage.xml
 .idea/workspace.xml
 .idea/tasks.xml
 .ipynb_checkpoints
-local_settings.py
+src/settings/local_settings.py
 *.log
 MANIFEST
 *.mo
@@ -106,24 +106,7 @@ fabric.properties
 .idea/**/**
 opt/mongo/**/**
 
-src/rest/services/http_api/settings/local_settings.py
-src/rest/settings/local_settings.py
 
-opt/deploy/site_deploy/inventories/production.yml
-opt/deploy/site_deploy/files/production/
-
-
-opt/deploy/site_deploy/files/staging/vpn/c1/openvpn/easy-rsa/pki/certs_by_serial/*.pem
-opt/deploy/site_deploy/files/staging/vpn/c1/openvpn/easy-rsa/pki/issued/*.crt
-opt/deploy/site_deploy/files/staging/vpn/c1/openvpn/easy-rsa/pki/private/*.key
-opt/deploy/site_deploy/files/staging/vpn/c1/openvpn/easy-rsa/pki/reqs/*.req
-
-opt/deploy/site_deploy/files/staging/vpn/c1/openvpn/easy-rsa/pki/\.rnd
-opt/deploy/site_deploy/files/staging/vpn/c1/openvpn/easy-rsa/pki/index\.txt
-opt/deploy/site_deploy/files/staging/vpn/c1/openvpn/easy-rsa/pki/serial
-opt/deploy/site_deploy/files/staging/vpn/c1/openvpn/easy-rsa/pki/serial\.old
-
-opt/deploy/site_deploy/files/staging/vpn/c1/openvpn/easy-rsa/pki/index\.txt\.old
 
 
 celerybeat-schedule.db
@@ -134,5 +117,5 @@ opt/cluster_generator/openvpn/cluster_openvpn/**/**
 opt/cluster_generator/openvpn/openvpn/**/**
 
 
-opt/deploy/docker/files/production/
-opt/deploy/docker/inventories/production.yml
+opt/deploy/files/production/
+
