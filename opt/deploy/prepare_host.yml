@@ -1,17 +1,12 @@
 # Tested at:
-# Ubuntu 16.04.4
+# Ubuntu 16.04
+# Ubuntu 18.04
 ---
 - name: Preparing host
-  hosts:  c1 # set hosts (НЕ надо запускать инсталяцию zabbix-agent на сервере zabbix-a)
+  hosts:  c1
   sudo: yes
-#  vars:
-#    zabbix_agent_server: 1.1.1.1
 
   pre_tasks:
-
-#    # Если раскоментить переменная zabbix_agent_server переопределиться значением из defaults/main.yml
-#    - name: Include vars
-#      include_vars: "{{ playbook_dir }}/defaults/main.yml"
 
     - name: Adding tunnel user
       sudo: yes
@@ -47,14 +42,10 @@
       ignore_errors: True
 
   roles:
-#    - zabbix_agent
     - { role: docker, ignore_errors: yes }
     - docker_compose
 
   post_tasks:
-
-#    - name: Restarting zabbix-agent
-#      service: name=zabbix-agent state=restarted
 
     - name: Creating docker group
       sudo: yes
@@ -64,13 +55,10 @@
     - name: Adding user to docker group
       sudo: yes
       ignore_errors: yes
-      raw: " sudo usermod -aG docker $USER"
+      raw: "usermod -aG docker $USER"
 
-    - name: Creating docker_persistent_dir
-      raw: "mkdir -p {{ docker_persistent_dir }}"
-
-    - name: Set permissions for docker_persistent_dir
-      raw: "chmod 777 -R {{ docker_persistent_dir }}"
+    - name: Creating dirs
+      raw: "mkdir -p {{ ansistrano_deploy_to }} && mkdir -p {{ docker_persistent_dir }} && mkdir -p {{ vpn_data_dest_dir }}"
 
     - name: Deploy complete
       debug:
