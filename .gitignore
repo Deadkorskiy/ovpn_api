@@ -117,5 +117,5 @@ opt/cluster_generator/openvpn/cluster_openvpn/**/**
 opt/cluster_generator/openvpn/openvpn/**/**
 
 
-opt/deploy/files/production/
+opt/deploy/files/production/**/**
 
