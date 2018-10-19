@@ -27,7 +27,7 @@ all:
                        local_settings_dest: "{{ ansistrano_deploy_to }}/current/src/settings/local_settings.py"
     vars:
         ansible_port: 22
-        ansible_user: deploy
+        ansible_user: deploy_onetimevpn_vpn
         ansible_sudo_pass: njksadf98693264fhlajshdfgJHFDLJHSGLDAwirtiwu
         ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
         ansible_python_interpreter: /usr/bin/python2.7
