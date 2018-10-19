@@ -1,0 +1,11 @@
+# Tested at:
+# Ubuntu 16.04
+# Ubuntu 18.04
+
+---
+- name: Stop container
+  hosts: c1
+  tasks:
+    - name: Stop container
+      sudo: yes
+      raw: "cd \"$(dirname \"{{ docker_compose_dest }}\")\" && docker-compose stop"

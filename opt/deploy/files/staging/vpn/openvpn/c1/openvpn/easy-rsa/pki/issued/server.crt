@@ -1,0 +1,94 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            1a:97:57:b2:8a:4f:88:63:7f:9f:7d:b0:13:49:22:42
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=PA, ST=PANAMA, L=PANAMA, O=OneTimeVPN, OU=OneTimeVPN, CN=ChangeMe/emailAddress=ca@onetimevpn.com
+        Validity
+            Not Before: Oct 17 23:13:51 2018 GMT
+            Not After : Oct 14 23:13:51 2028 GMT
+        Subject: C=PA, ST=PANAMA, L=PANAMA, O=OneTimeVPN, OU=OneTimeVPN, CN=server/emailAddress=ca@onetimevpn.com
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:bf:63:6f:10:29:70:e1:39:82:4f:43:0b:57:51:
+                    f8:30:62:f2:c4:34:ac:2e:91:ef:45:8b:0b:95:a7:
+                    42:a7:c2:08:5e:d6:fd:8e:94:17:2a:bb:f1:7c:4d:
+                    46:d1:50:49:02:ec:ea:5b:97:3b:0c:15:2a:99:b0:
+                    10:f8:e1:50:5e:e2:d7:30:f9:22:84:92:a1:79:e4:
+                    e8:4e:c5:de:5f:f7:aa:07:0e:9a:c1:52:b3:c8:89:
+                    1d:1d:b6:19:90:77:20:3c:64:d5:02:e0:80:3b:20:
+                    18:cb:1c:e1:bb:81:22:ef:34:4f:c4:e6:93:dd:93:
+                    fc:09:ed:fc:0b:f2:3c:e3:eb:11:b8:4e:16:33:dd:
+                    80:a1:e5:9f:6f:47:92:73:75:6b:78:bb:9a:b8:e0:
+                    f2:df:0a:1b:43:a3:6d:1e:17:58:0b:35:5b:8f:b8:
+                    84:b2:43:69:19:7f:72:ee:2c:27:69:01:4b:73:b1:
+                    44:c6:4d:6f:28:44:29:d5:55:0a:4d:37:ce:8e:32:
+                    51:01:b7:7c:e1:bd:65:5e:21:60:b3:b1:7b:49:ae:
+                    0e:e0:1a:75:4b:54:80:13:e2:a7:03:b8:dc:5e:55:
+                    d6:33:c4:06:a9:4d:66:e6:0c:d2:8c:64:d1:c0:13:
+                    f2:2b:11:0f:ff:49:0e:00:61:75:91:75:a3:91:03:
+                    25:9f
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            X509v3 Subject Key Identifier: 
+                58:02:0F:A5:08:CD:E9:14:D7:09:E6:48:95:58:B2:94:9F:7D:3A:09
+            X509v3 Authority Key Identifier: 
+                keyid:21:A9:AF:32:6C:E9:6C:73:27:87:6A:9C:0C:96:59:63:1A:1E:BE:5E
+                DirName:/C=PA/ST=PANAMA/L=PANAMA/O=OneTimeVPN/OU=OneTimeVPN/CN=ChangeMe/emailAddress=ca@onetimevpn.com
+                serial:89:4A:A7:46:10:0F:96:69
+
+            X509v3 Extended Key Usage: 
+                TLS Web Server Authentication
+            X509v3 Key Usage: 
+                Digital Signature, Key Encipherment
+            X509v3 Subject Alternative Name: 
+                DNS:server
+    Signature Algorithm: sha256WithRSAEncryption
+         12:e7:bd:51:46:3b:b3:d8:a6:62:72:b6:85:78:5e:c9:a6:59:
+         d3:13:3f:90:0a:73:29:e6:e0:97:a0:bd:ac:f7:4e:1b:22:c9:
+         d9:a0:b9:59:9b:2b:6b:fb:cb:dc:59:91:c1:2e:6e:9f:76:6a:
+         0f:e2:00:ae:2e:24:3b:aa:69:4b:d3:99:90:a8:93:f8:51:61:
+         5e:6e:68:73:25:38:f8:a9:01:83:26:60:2b:8e:e7:2a:ca:32:
+         8f:7b:43:99:63:52:a6:f0:97:57:1f:cb:d8:b6:8e:bb:d5:9e:
+         1f:f2:bd:75:6f:2c:48:1e:4a:3f:44:19:64:25:66:c8:1c:ba:
+         e3:e0:4a:fb:be:c1:05:50:ba:40:8f:88:15:cf:e4:c1:34:fd:
+         73:72:19:97:06:59:a3:68:8d:05:8e:3f:17:33:8d:e2:03:93:
+         1b:4c:ff:2e:6d:b1:3a:3e:a7:a0:5b:d9:04:f6:77:52:a4:a3:
+         ae:e5:7b:df:52:9c:fa:cb:b2:03:a3:7e:3f:98:55:5f:ba:1a:
+         45:31:fe:f5:7a:b8:8b:b3:94:1f:68:33:a6:27:7a:e1:d7:2a:
+         9b:fc:d4:85:1f:bc:6b:1e:87:5c:f9:e5:29:69:49:92:72:90:
+         51:8e:e6:9b:2b:55:18:e6:70:82:75:df:67:63:fc:0c:27:07:
+         4c:ca:c4:48
+-----BEGIN CERTIFICATE-----
+MIIE0TCCA7mgAwIBAgIQGpdXsopPiGN/n32wE0kiQjANBgkqhkiG9w0BAQsFADCB
+jjELMAkGA1UEBhMCUEExDzANBgNVBAgMBlBBTkFNQTEPMA0GA1UEBwwGUEFOQU1B
+MRMwEQYDVQQKDApPbmVUaW1lVlBOMRMwEQYDVQQLDApPbmVUaW1lVlBOMREwDwYD
+VQQDDAhDaGFuZ2VNZTEgMB4GCSqGSIb3DQEJARYRY2FAb25ldGltZXZwbi5jb20w
+HhcNMTgxMDE3MjMxMzUxWhcNMjgxMDE0MjMxMzUxWjCBjDELMAkGA1UEBhMCUEEx
+DzANBgNVBAgMBlBBTkFNQTEPMA0GA1UEBwwGUEFOQU1BMRMwEQYDVQQKDApPbmVU
+aW1lVlBOMRMwEQYDVQQLDApPbmVUaW1lVlBOMQ8wDQYDVQQDDAZzZXJ2ZXIxIDAe
+BgkqhkiG9w0BCQEWEWNhQG9uZXRpbWV2cG4uY29tMIIBIjANBgkqhkiG9w0BAQEF
+AAOCAQ8AMIIBCgKCAQEAv2NvEClw4TmCT0MLV1H4MGLyxDSsLpHvRYsLladCp8II
+Xtb9jpQXKrvxfE1G0VBJAuzqW5c7DBUqmbAQ+OFQXuLXMPkihJKheeToTsXeX/eq
+Bw6awVKzyIkdHbYZkHcgPGTVAuCAOyAYyxzhu4Ei7zRPxOaT3ZP8Ce38C/I84+sR
+uE4WM92AoeWfb0eSc3VreLuauODy3wobQ6NtHhdYCzVbj7iEskNpGX9y7iwnaQFL
+c7FExk1vKEQp1VUKTTfOjjJRAbd84b1lXiFgs7F7Sa4O4Bp1S1SAE+KnA7jcXlXW
+M8QGqU1m5gzSjGTRwBPyKxEP/0kOAGF1kXWjkQMlnwIDAQABo4IBKTCCASUwCQYD
+VR0TBAIwADAdBgNVHQ4EFgQUWAIPpQjN6RTXCeZIlViylJ99OgkwgcMGA1UdIwSB
+uzCBuIAUIamvMmzpbHMnh2qcDJZZYxoevl6hgZSkgZEwgY4xCzAJBgNVBAYTAlBB
+MQ8wDQYDVQQIDAZQQU5BTUExDzANBgNVBAcMBlBBTkFNQTETMBEGA1UECgwKT25l
+VGltZVZQTjETMBEGA1UECwwKT25lVGltZVZQTjERMA8GA1UEAwwIQ2hhbmdlTWUx
+IDAeBgkqhkiG9w0BCQEWEWNhQG9uZXRpbWV2cG4uY29tggkAiUqnRhAPlmkwEwYD
+VR0lBAwwCgYIKwYBBQUHAwEwCwYDVR0PBAQDAgWgMBEGA1UdEQQKMAiCBnNlcnZl
+cjANBgkqhkiG9w0BAQsFAAOCAQEAEue9UUY7s9imYnK2hXheyaZZ0xM/kApzKebg
+l6C9rPdOGyLJ2aC5WZsra/vL3FmRwS5un3ZqD+IAri4kO6ppS9OZkKiT+FFhXm5o
+cyU4+KkBgyZgK47nKsoyj3tDmWNSpvCXVx/L2LaOu9WeH/K9dW8sSB5KP0QZZCVm
+yBy64+BK+77BBVC6QI+IFc/kwTT9c3IZlwZZo2iNBY4/FzON4gOTG0z/Lm2xOj6n
+oFvZBPZ3UqSjruV731Kc+suyA6N+P5hVX7oaRTH+9Xq4i7OUH2gzpid64dcqm/zU
+hR+8ax6HXPnlKWlJknKQUY7mmytVGOZwgnXfZ2P8DCcHTMrESA==
+-----END CERTIFICATE-----

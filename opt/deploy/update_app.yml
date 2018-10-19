@@ -1,0 +1,61 @@
+# обновляет приложение
+
+# Tested at:
+# Ubuntu 16.04
+# Ubuntu 18.04
+
+---
+- name: Update app
+  hosts: c1
+  sudo: yes
+
+  pre_tasks:
+
+    - name: Deploy started
+      debug:
+        msg: "{{ ansible_host }} deploy started"
+
+  roles:
+    - deploy
+
+  post_tasks:
+
+    - name: Creating sub dirs
+      sudo: yes
+      raw: "mkdir -p {{ docker_persistent_dir }}/var/log && mkdir -p {{ docker_persistent_dir }}/var/tmp_output"
+
+    - name: Send docker-compose.yml
+      copy:
+        src: "{{ docker_compose_src }}"
+        dest: "{{ docker_compose_dest }}"
+
+    - name: Send local_settings.py
+      copy:
+        src: "{{ local_settings_src }}"
+        dest: "{{ local_settings_dest }}"
+
+    - name: Enabling firewall
+      sudo: yes
+      raw: "ufw --force enable"
+
+    - name: UFW Allow
+      sudo: yes
+      raw: "ufw allow {{ item }}"
+      with_items: "{{ ufw_allow_port }}"
+
+#    - name: Setting project file permissions
+#      sudo: yes
+#      raw: "find {{ ansistrano_deploy_to }} -type d -exec chmod 755 {} \\; && find {{ ansistrano_deploy_to }} -type f -exec chmod 744 {} \\; && chown {{ ansible_user }}:{{ ansible_user }} {{ ansistrano_deploy_to }} -R"
+#
+#    - name: Setting docer persistent permissions
+#      sudo: yes
+#      raw: "find {{ docker_persistent_dir }} -type d -exec chmod 755 {} \\; && find {{ docker_persistent_dir }} -type f -exec chmod 744 {} \\; && chown {{ ansible_user }}:{{ ansible_user }} {{ docker_persistent_dir }} -R"
+#
+#    - name: Deploy complete
+#      debug:
+#        msg: "{{ ansible_host }} Deploy complete"
+#
+#    - name: Reload containers
+#      sudo: yes
+#      ignore_errors: yes
+#      raw: 'cd {{ ansistrano_deploy_to }}/current/ && docker-compose restart gunicorn celery celery_beat nginx tg_feedback_bot'

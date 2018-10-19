@@ -1,0 +1,49 @@
+all:
+    children:
+
+        vpn:
+           children:
+               c1:
+                   hosts:
+                       c1n1:
+                           ansible_host: 104.248.246.172
+                   vars:
+                       service_name: "c1"  # Должно совпать с наименованием папки т.к. совпадает с vpn_data_src_dir
+                       ansistrano_deploy_to: "{{ apps_dir }}/{{ service_name }}/ansistrano" # тут исходники приложения
+                       docker_persistent_dir: "{{ apps_dir }}/{{ service_name }}/docker_persistent"  # файлы котрые маунтятся в докер
+
+                       vpn_data_dest_dir: "{{ docker_persistent_dir }}/openvpn"   # тут файлы впна на сервере
+                       vpn_data_src_dir: "files/staging/vpn/openvpn/{{ service_name }}/openvpn"   # тут локальные файлы впна
+
+                       ufw_allow_port: # какие порты открыть firewall-у, должны совпать с docker-compose.yml  + 22 для ssh
+                           - 443
+                           - 8080
+                           - 22
+
+                       docker_compose_src: "files/staging/vpn/openvpn/{{ service_name }}/docker-compose.yml"
+                       docker_compose_dest: "{{ ansistrano_deploy_to }}/current/etc/openvpn/docker-compose.yml"
+
+                       local_settings_src: "files/staging/vpn/openvpn/{{ service_name }}/local_settings.py"
+                       local_settings_dest: "{{ ansistrano_deploy_to }}/current/src/settings/local_settings.py"
+    vars:
+        ansible_port: 22
+        ansible_user: deploy
+        ansible_sudo_pass: njksadf98693264fhlajshdfgJHFDLJHSGLDAwirtiwu
+        ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+        ansible_python_interpreter: /usr/bin/python2.7
+        ansible_ssh_private_key_file: files/staging/keys/id_rsa
+
+        apps_dir: "/var/apps" # Самая главная папка, в ней лежат ВСЕ приложения
+
+        # deploy
+        ansistrano_git_branch: master
+        # ansistrano_deploy_to: "{{ apps_dir }}/application/ansistrano"  # куда класть исходники management api, настраивается на уровне кахдого хоста
+        ansistrano_allow_anonymous_stats: no
+        ansistrano_keep_releases: 0
+        ansistrano_deploy_via: git
+        ansistrano_git_repo: git@github.com:Deadkorskiy/onetimevpn_vpn.git
+        ansistrano_git_refspec: "+refs/heads/*:refs/remotes/origin/*"
+        ansistrano_git_identity_key_path: "{{ ansible_ssh_private_key_file }}"
+
+        # zabbix /etc/zabbix/zabbix_agentd.conf
+        # zabbix_agent_server: 206.189.84.23

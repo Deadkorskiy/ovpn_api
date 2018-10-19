@@ -1,0 +1,26 @@
+version: '2'
+services:
+    openvpn:
+        container_name: openvpn
+        restart: always
+        build:
+            context: ../../
+            dockerfile: $PWD/Dockerfile
+        image: openvpn
+        dns:
+            - "8.8.8.8"
+            - "8.8.4.4"
+        volumes:
+            - ../../src:/code/src
+            - ../../etc:/code/etc
+
+            - /var/apps/c1/docker_persistent/openvpn:/etc/openvpn
+
+            - /var/apps/c1/docker_persistent/var:/code/var
+            - /var/apps/c1/docker_persistent/var/log/nginx:/var/log/nginx
+            - /var/apps/c1/docker_persistent/var/log/supervisord:/var/log/supervisord
+            - /var/apps/c1/docker_persistent/var/tmp_output:/code/var/tmp_output
+        ports:
+            - 0.0.0.0:443:1194       # OPENVPN
+            - 0.0.0.0:8080:8080      # API MANAGEMENT
+        privileged: true
