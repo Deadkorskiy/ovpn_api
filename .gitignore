@@ -107,7 +107,7 @@ fabric.properties
 opt/mongo/**/**
 
 
-
+src/settings/local_settings.py
 
 celerybeat-schedule.db
 
