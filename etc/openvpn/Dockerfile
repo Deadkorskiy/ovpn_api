@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-RUN apt-get update -y
+RUN apt-get update -y  --fix-missing
 
 # OPENVPN
 RUN apt-get install -y openvpn iptables openssl ca-certificates
