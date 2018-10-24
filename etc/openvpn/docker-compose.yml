@@ -14,7 +14,7 @@ services:
             - ../../src:/code/src
             - ../../etc:/code/etc
 
-            - ../../opt/deploy/docker/files/staging/vpn/openvpn/c1/openvpn:/etc/openvpn
+            - ../../opt/deploy/files/staging/vpn/openvpn/c1/openvpn:/etc/openvpn
 
             - ../../var:/code/var
             - ../../var/log/nginx:/var/log/nginx
