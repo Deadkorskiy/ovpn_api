@@ -75,7 +75,7 @@ else
 
 	IP=0.0.0.0
 	PROTOCOL=tcp
-	PORT=1194
+	PORT=443
 	DNS=4
 	CLIENT=client
 
@@ -228,7 +228,7 @@ exit 0' > $RCLOCAL
 	# If SELinux is enabled and a custom port or TCP was selected, we need this
 	if hash sestatus 2>/dev/null; then
 		if sestatus | grep "Current mode" | grep -qs "enforcing"; then
-			if [[ "$PORT" != '1194' || "$PROTOCOL" = 'tcp' ]]; then
+			if [[ "$PORT" != '443' || "$PROTOCOL" = 'tcp' ]]; then
 				# semanage isn't available in CentOS 6 by default
 				if ! hash semanage 2>/dev/null; then
 					yum install policycoreutils-python -y

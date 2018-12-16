@@ -20,6 +20,7 @@ services:
             - ../../var/log/nginx:/var/log/nginx
             - ../../var/log/supervisord:/var/log/supervisord
         ports:
-            - 0.0.0.0:443:1194       # OPENVPN
-            - 0.0.0.0:8080:8080     # API MANAGEMENT
+            - 443        # OPENVPN
+            - 8080       # API MANAGEMENT
         privileged: true
+        network_mode: host
