@@ -6,21 +6,13 @@ services:
         build:
             context: ../../
             dockerfile: $PWD/Dockerfile
-        image: openvpn
-        dns:
-            - "8.8.8.8"
-            - "8.8.4.4"
         volumes:
             - ../../src:/code/src
             - ../../etc:/code/etc
-
-            - ../../opt/deploy/files/staging/vpn/openvpn/c1/openvpn:/etc/openvpn
-
+            - /etc/openvpn:/etc/openvpn
             - ../../var:/code/var
             - ../../var/log/nginx:/var/log/nginx
-            - ../../var/log/supervisord:/var/log/supervisord
         ports:
-            - 443        # OPENVPN
             - 8080       # API MANAGEMENT
-        privileged: true
         network_mode: host
+        command: bash -c "cd /code && gunicorn --name=gunicorn --workers=2 src.rest.services.http_api.application -b 0.0.0.0:8080"
