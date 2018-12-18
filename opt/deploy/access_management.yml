@@ -1,0 +1,72 @@
+# Tested at:
+# Ubuntu 16.04.4
+---
+- name: Access management
+  hosts: c1
+  sudo: yes
+  vars:
+
+    # access management
+    included_tunnel_user_keys:
+#      - {
+#        pub_key: "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAmMAfOttUzA5YZ32hGx0sygzPIBQiGRp7ZPDqNft4R31PFPfuLKDbXgTr4PTQNik5FESZXSdzMZAw1m9AjY++DSauNQIgsV1AOW1ELmz4tca7ZSOUz1G1I8vzzTPrrGZV99a897uwtd0s59dtXXITq7uCGR33ZXNqvsXSrywhrdiihrKqugEopixklLKJRRYHkUca8Bd1i4etKHAfCUXuyClAxzTRe1dOuMkAIdZxRPqgI6rxthYI22xolktG/UOAHHj7f5MA7nFZpaf1ccy2MQ+RD8vwaVx6fNnpexJA8UsR3gJsrWTKCL13KzvQphkpUbzM2FZhD0UHq1nBDM96PQ== deadkorskiy"
+#      }
+#      - {
+#        pub_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCueqf4T+hB0xobHRLY7z4tBRZId5VeVIfkHJ2yEo8hVb74HbEiPnPgPZJS2IKoacNvI9vB5x/8Zb99IfwETRvwP9TLvq31nO2JdYS+Sp/XCJzdKByV9QA5I31mCoKVL0qgzBzrFf+QqEtEbH4XUv3xTN2lYoS525EwMFHRpzxWuijJrShrrlvKPFRPIBzQc6SvifL48ERb/pXD3IRo6sFCX34w+vcKxFBGb9lT4OgnGwcnYVwVIR2UAefxX8QdQt5BOzH4545xkXVEM5JKs0FeQGZekNKOffdelXxWksfH13KlucJu5daiRirL5xhJJqT1yJGrENsEd52ivh0otITF deepdishks"
+#      }
+#      - {
+#        pub_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCp8JCaixFbrQWmOrKvGI7Whl5NyeMW5qHkq0D7d+TNd16P4psrciQRrsm/FzkpFGpFy2iCyIgnkNY4b1zLnFj+VLFrIL8xjbshuR3Bp1Ka5MP5VjxAuyfCzgozhPH8IWC7l6JxbtDfa1jYE81SiaMDel0riGwE+KRdC8iTn6+r/8U3WwI5WmXqSsOU5cqYJ9HciOh2PmTVPYwhkfKR562kDF7Tt+Wm3LpW2LOpig+drfx2/pGY5h8U4UaXUg+sA2peLMqqfaah06o3ItVBV+YxDlf8PjlZTTWluGh8fhtyzVEODoaO8vsi2GeVdYiugRYRuhb370BlgVmtVc64dBLX ruben@MacBook-Pro-Ruben"
+#      }
+    excluded_tunnel_user_keys:
+
+    # root privileges
+    included_deploy_user_keys:
+      - {
+        pub_key: "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAmMAfOttUzA5YZ32hGx0sygzPIBQiGRp7ZPDqNft4R31PFPfuLKDbXgTr4PTQNik5FESZXSdzMZAw1m9AjY++DSauNQIgsV1AOW1ELmz4tca7ZSOUz1G1I8vzzTPrrGZV99a897uwtd0s59dtXXITq7uCGR33ZXNqvsXSrywhrdiihrKqugEopixklLKJRRYHkUca8Bd1i4etKHAfCUXuyClAxzTRe1dOuMkAIdZxRPqgI6rxthYI22xolktG/UOAHHj7f5MA7nFZpaf1ccy2MQ+RD8vwaVx6fNnpexJA8UsR3gJsrWTKCL13KzvQphkpUbzM2FZhD0UHq1nBDM96PQ== deadkorskiy"
+      }
+      - {
+        pub_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCueqf4T+hB0xobHRLY7z4tBRZId5VeVIfkHJ2yEo8hVb74HbEiPnPgPZJS2IKoacNvI9vB5x/8Zb99IfwETRvwP9TLvq31nO2JdYS+Sp/XCJzdKByV9QA5I31mCoKVL0qgzBzrFf+QqEtEbH4XUv3xTN2lYoS525EwMFHRpzxWuijJrShrrlvKPFRPIBzQc6SvifL48ERb/pXD3IRo6sFCX34w+vcKxFBGb9lT4OgnGwcnYVwVIR2UAefxX8QdQt5BOzH4545xkXVEM5JKs0FeQGZekNKOffdelXxWksfH13KlucJu5daiRirL5xhJJqT1yJGrENsEd52ivh0otITF deepdishks"
+      }
+    excluded_deploy_user_keys:
+
+  tasks:
+
+    - name: Including deploy keys
+      authorized_key:
+        user: "{{ansible_user}}"
+        state: present
+        key: "{{ item.pub_key }}"
+      with_items:
+        "{{ included_deploy_user_keys }}"
+      when: included_deploy_user_keys
+
+    - name: Excluding deploy keys
+      authorized_key:
+        user: "{{ansible_user}}"
+        state: absent
+        key: "{{ item.pub_key }}"
+      with_items:
+        "{{ excluded_deploy_user_keys }}"
+      when: excluded_deploy_user_keys
+
+    - name: Including tunnel keys
+      authorized_key:
+        user: "tunnel"
+        state: present
+        key: "{{ item.pub_key }}"
+      with_items:
+        "{{ included_tunnel_user_keys }}"
+      when: included_tunnel_user_keys
+
+    - name: Excluding tunnel keys
+      authorized_key:
+        user: "tunnel"
+        state: absent
+        key: "{{ item.pub_key }}"
+      with_items:
+        "{{ excluded_tunnel_user_keys }}"
+      when: excluded_tunnel_user_keys
+
+    - name: Deploy complete
+      debug:
+        msg: "Deploy complete"
