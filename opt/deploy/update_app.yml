@@ -24,6 +24,16 @@
       sudo: yes
       raw: "mkdir -p {{ docker_persistent_dir }}/var/log && mkdir -p {{ docker_persistent_dir }}/var/tmp_output"
 
+    - name: Send nginx.conf
+      copy:
+        src: "{{ vpn_data_src_dir }}/../nginx.conf"
+        dest: "{{ ansistrano_deploy_to }}/current/etc/nginx.conf"
+
+    - name: Send nginx.conf
+      copy:
+        src: "{{ vpn_data_src_dir }}/../nginx.conf"
+        dest: "{{ ansistrano_deploy_to }}/current/etc/nginx.conf"
+
     - name: Send docker-compose.yml
       copy:
         src: "{{ docker_compose_src }}"

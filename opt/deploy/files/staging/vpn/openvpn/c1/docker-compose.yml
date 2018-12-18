@@ -1,27 +1,29 @@
-version: '3.3'
+version: '2'
 services:
-    openvpn:
+    gunicorn:
         container_name: openvpn
         restart: always
         build:
             context: ../../
             dockerfile: $PWD/Dockerfile
-        image: openvpn
-        dns:
-            - "8.8.8.8"
-            - "8.8.4.4"
         volumes:
             - ../../src:/code/src
             - ../../etc:/code/etc
-
-            - /var/apps/c1/docker_persistent/openvpn:/etc/openvpn
-
-            - /var/apps/c1/docker_persistent/var:/code/var
-            - /var/apps/c1/docker_persistent/var/log/nginx:/var/log/nginx
-            - /var/apps/c1/docker_persistent/var/log/supervisord:/var/log/supervisord
-            - /var/apps/c1/docker_persistent/var/tmp_output:/code/var/tmp_output
+            - /etc/openvpn:/etc/openvpn
+            - ../../var:/code/var
         ports:
-            - 443        # OPENVPN
             - 8080       # API MANAGEMENT
-        privileged: true
         network_mode: host
+        command: bash -c "cd /code && gunicorn --name=gunicorn --workers=2 src.application -b 127.0.0.1:5000"
+    nginx:
+        image: nginx
+        network_mode: host
+        container_name: "nginx"
+        restart: always
+        volumes:
+            - ../nginx.conf:/etc/nginx/nginx.conf
+            - /var/apps/onetimevpn/docker_persistent/var/log/nginx:/var/log/nginx
+        ports:
+            - "0.0.0.0:8080:8080"
+        depends_on:
+            - gunicorn
