@@ -10,27 +10,47 @@
 - name: Sending vpn cluster data
   hosts: c1
   tasks:
+    - name: send openvpn installation script
+      sudo: yes
+      copy:
+        src: "files/openvpn-install.sh"
+        dest: "~/openvpn-install.sh"
+
+    - name: Installing openvpn
+      sudo: yes
+      raw: "cd ~/ && bash openvpn-install.sh"
+      ignore_errors: True
+
     - name: Creating clusters archive
       sudo: no
       delegate_to: 127.0.0.1
       raw: "cd {{ vpn_data_src_dir }} && tar -zcvf vpn.tar.gz *"
 
     - name: Removing destination dir
+      sudo: yes
       raw: "rm {{ vpn_data_dest_dir }} -rf > /dev/null"
 
     - name: Creating destination dir
+      sudo: yes
       raw: "mkdir -p {{ vpn_data_dest_dir }}"
 
     - name: Send clusters archive
+      sudo: yes
       copy:
         src: "{{ vpn_data_src_dir }}/vpn.tar.gz"
         dest: "{{ vpn_data_dest_dir }}/vpn.tar.gz"
 
     - name: Extracting clusters archive
+      sudo: yes
       raw: "tar -xzf {{ vpn_data_dest_dir }}/vpn.tar.gz -C {{ vpn_data_dest_dir }}/ "
 
     - name: Removing clusters archive
+      sudo: yes
       raw: "rm {{ vpn_data_dest_dir }}/vpn.tar.gz"
+
+    - name: Restart openvpn server
+      sudo: yes
+      raw: "service openvpn restart"
 
     - name: Deliting local openvpn.tar.gz
       sudo: no

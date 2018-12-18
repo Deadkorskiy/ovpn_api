@@ -8,4 +8,4 @@
   tasks:
     - name: Restart container
       sudo: yes
-      raw: "cd \"$(dirname \"{{ docker_compose_dest }}\")\" && docker-compose restart"
+      raw: "cd \"$(dirname \"{{ docker_compose_dest }}\")\" && docker-compose down && docker-compose up -d --build"

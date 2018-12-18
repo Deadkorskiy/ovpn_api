@@ -75,7 +75,7 @@ else
 	# Autodetect IP address and pre-fill for the user
 	IP=$(ip addr | grep 'inet' | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -1)
 
-	echo "IP=" $IP
+	echo "IP=" $IPШ
 	echo "PROTOCOL=" tcp
 	echo "PORT=" 443
 	echo "DNS=" 4
@@ -287,4 +287,3 @@ verb 3" > /etc/openvpn/client-common.txt
 	echo "Your client configuration is available at" ~/"$CLIENT.ovpn"
 	echo "If you want to add more clients, you simply need to run this script again!"
 fi
-rm -- "$0"
