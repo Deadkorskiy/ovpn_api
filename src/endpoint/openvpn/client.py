@@ -166,13 +166,13 @@ def load_client(unique_client_name):
     try:
         crt_fp = os.path.join(cluster_easy_rsa_path, 'pki', 'issued', unique_client_name + '.crt')
 
-        raw_serial = shell_cmd('''openssl x509 -in "{}" -noout -serial'''.format(crt_fp))
+        raw_serial = shell_cmd('''openssl x509 -in "{}" -noout -serial'''.format(crt_fp), capture=True)
         serial = raw_serial.replace('serial=', '')
 
-        raw_dn = shell_cmd('''openssl x509 -in "{}"  -noout -subject -nameopt sep_multiline'''.format(crt_fp))
+        raw_dn = shell_cmd('''openssl x509 -in "{}"  -noout -subject -nameopt sep_multiline'''.format(crt_fp), capture=True)
         dn = '/{}'.format('/'.join(filter(lambda x: 'subject' not in x.lower(), re.findall(r'\w{1,20}=.{0,100}', raw_dn))))
 
-        raw_expired_date = shell_cmd('''openssl x509 -in "{}" -noout -enddate'''.format(crt_fp))
+        raw_expired_date = shell_cmd('''openssl x509 -in "{}" -noout -enddate'''.format(crt_fp), capture=True)
         raw_expired_date = raw_expired_date.lower().replace('notafter=', '').replace(' ', '').replace('gmt', '')
         date = datetime.strptime(raw_expired_date, '%b%d%H:%M:%S%Y')
         date = '{}Z'.format(date.strftime('%y%m%d%H%M%S'))

@@ -39,10 +39,10 @@ def auth_required(f):
     return wrapper
 
 
-def shell_cmd(command: str) -> str:
+def shell_cmd(command: str, capture=False, shell=None) -> str:
     with fabric_settings(abort_exception=Exception):
         try:
-            result = str(local(command, capture=True))
+            result = str(local(command, capture=capture, shell=shell))
             logging.getLogger(__file__).debug(
                 'CMD:"{}". RESULT:{}'.format(command, result))
             return result
