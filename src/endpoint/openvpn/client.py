@@ -3,10 +3,11 @@ import os
 import logging
 from src.settings import settings
 from src.utils import json_custom_response, auth_required
-from fabric.api import local
 from fabric.api import settings as fabric_settings
 import re
 import uuid
+from datetime import datetime
+from ...utils import shell_cmd
 
 
 openvpn_client_bp = Blueprint('openvpn_client_bp', __name__, url_prefix='/api/openvpn/client')
@@ -35,7 +36,7 @@ def build_client(unique_client_name):
         command = 'timeout 10 bash -c "cd {}; ./easyrsa build-client-full {} nopass"'.format(cluster_easy_rsa_path, unique_client_name)
         with fabric_settings(abort_exception=Exception):
             try:
-                local(command)
+                shell_cmd(command)
             except Exception as e:
                 logging.getLogger(__file__).error('Error during client {} building:{}'.format(unique_client_name, str(e)))
                 return json_custom_response(errors_occured=[{'message': 'Building error'}], code=500)
@@ -84,9 +85,9 @@ def revoke_client(unique_client_name):
 
     with fabric_settings(abort_exception=Exception):
         try:
-            local('timeout 5 bash -c "cd {} && echo yes | ./easyrsa revoke {}"'.format(cluster_easy_rsa_path, unique_client_name))
-            local('timeout 5 bash -c "cd {} && ./easyrsa gen-crl"'.format(cluster_easy_rsa_path))
-            local('cd {} && chmod 775 crl.pem'.format(os.path.join(cluster_easy_rsa_path, 'pki')))
+            shell_cmd('timeout 5 bash -c "cd {} && echo yes | ./easyrsa revoke {}"'.format(cluster_easy_rsa_path, unique_client_name))
+            shell_cmd('timeout 5 bash -c "cd {} && ./easyrsa gen-crl"'.format(cluster_easy_rsa_path))
+            shell_cmd('cd {} && chmod 775 crl.pem'.format(os.path.join(cluster_easy_rsa_path, 'pki')))
         except Exception as e:
             logging.getLogger(__file__).error('Error during client {} revoke:{}'.format(unique_client_name, str(e)))
             return json_custom_response(errors_occured=[{'message': 'Revoke error'}], code=500)
@@ -117,9 +118,9 @@ def remove_client(unique_client_name):
 
     with fabric_settings(abort_exception=Exception):
         try:
-            local('rm {} -f'.format(os.path.join(cluster_easy_rsa_path, 'pki', 'private', unique_client_name + '.key')))
-            local('rm {} -f'.format(os.path.join(cluster_easy_rsa_path, 'pki', 'issued', unique_client_name + '.crt')))
-            local('rm {} -f'.format(os.path.join(cluster_easy_rsa_path, 'pki', 'reqs', unique_client_name + '.req')))
+            shell_cmd('rm {} -f'.format(os.path.join(cluster_easy_rsa_path, 'pki', 'private', unique_client_name + '.key')))
+            shell_cmd('rm {} -f'.format(os.path.join(cluster_easy_rsa_path, 'pki', 'issued', unique_client_name + '.crt')))
+            shell_cmd('rm {} -f'.format(os.path.join(cluster_easy_rsa_path, 'pki', 'reqs', unique_client_name + '.req')))
         except Exception as e:
             logging.getLogger(__file__).error('Error during client {} remove:{}'.format(unique_client_name, str(e)))
             return json_custom_response(errors_occured=[{'message': 'Remove error'}], code=500)
@@ -152,15 +153,39 @@ def load_client(unique_client_name):
     key = body.get('data', {}).get('client_key', '')
     crt = body.get('data', {}).get('client_crt', '')
     req = body.get('data', {}).get('client_req', '')
+    is_revoked = body.get('data', {}).get('is_revoked', False)
 
     with fabric_settings(abort_exception=Exception):
         try:
-            local('echo "{}" > {}'.format(key, os.path.join(cluster_easy_rsa_path, 'pki', 'private', unique_client_name + '.key')))
-            local('echo "{}" > {}'.format(crt, os.path.join(cluster_easy_rsa_path, 'pki', 'issued', unique_client_name + '.crt')))
-            local('echo "{}" > {}'.format(req, os.path.join(cluster_easy_rsa_path, 'pki', 'reqs', unique_client_name + '.req')))
+            shell_cmd('echo "{}" > {}'.format(key, os.path.join(cluster_easy_rsa_path, 'pki', 'private', unique_client_name + '.key')))
+            shell_cmd('echo "{}" > {}'.format(crt, os.path.join(cluster_easy_rsa_path, 'pki', 'issued', unique_client_name + '.crt')))
+            shell_cmd('echo "{}" > {}'.format(req, os.path.join(cluster_easy_rsa_path, 'pki', 'reqs', unique_client_name + '.req')))
         except Exception as e:
             logging.getLogger(__file__).error('Error during client {} load:{}'.format(unique_client_name, str(e)))
             return json_custom_response(errors_occured=[{'message': 'Load error'}], code=500)
+    try:
+        crt_fp = os.path.join(cluster_easy_rsa_path, 'pki', 'issued', unique_client_name + '.crt')
+
+        raw_serial = shell_cmd('''openssl x509 -in "{}" -noout -serial'''.format(crt_fp))
+        serial = raw_serial.replace('serial=', '')
+
+        raw_dn = shell_cmd('''openssl x509 -in "{}"  -noout -subject -nameopt sep_multiline'''.format(crt_fp))
+        dn = '/{}'.format('/'.join(filter(lambda x: 'subject' not in x.lower(), re.findall(r'\w{1,20}=.{0,100}', raw_dn))))
+
+        raw_expired_date = shell_cmd('''openssl x509 -in "{}" -noout -enddate'''.format(crt_fp))
+        raw_expired_date = raw_expired_date.lower().replace('notafter=', '').replace(' ', '').replace('gmt', '')
+        date = datetime.strptime(raw_expired_date, '%b%d%H:%M:%S%Y')
+        date = '{}Z'.format(date.strftime('%y%m%d%H%M%S'))
+
+        record = '{}	{}		{}	unknown	{}\r\n'.format('R' if bool(is_revoked) else 'V', date, serial, dn)
+
+        index_txt_path = os.path.join(cluster_easy_rsa_path, 'pki', 'index.txt')
+        f = open(index_txt_path, 'a')
+        f.write(record)
+        f.close()
+    except Exception as e:
+        logging.getLogger(__file__).error('Error during update index.txt. error:{}'.format(str(e)))
+        return json_custom_response(errors_occured=[{'message': 'Load error'}], code=500)
 
     return json_custom_response(
         data={
@@ -212,9 +237,9 @@ def restore_client(unique_client_name):
                 f.write(index_txt_content)
                 f.truncate()
 
-            local('chmod 775 {}'.format(index_txt_path))
-            local('timeout 5 bash -c "cd {} && ./easyrsa gen-crl"'.format(cluster_easy_rsa_path))
-            local('cd {} && chmod 775 crl.pem'.format(os.path.join(cluster_easy_rsa_path, 'pki')))
+            shell_cmd('chmod 775 {}'.format(index_txt_path))
+            shell_cmd('timeout 5 bash -c "cd {} && ./easyrsa gen-crl"'.format(cluster_easy_rsa_path))
+            shell_cmd('cd {} && chmod 775 crl.pem'.format(os.path.join(cluster_easy_rsa_path, 'pki')))
         except Exception as e:
             logging.getLogger(__file__).error('Error during client {} restore:{}'.format(unique_client_name, str(e)))
             return json_custom_response(errors_occured=[{'message': 'Restore error'}], code=500)
@@ -253,7 +278,7 @@ def kick_client(unique_client_name):
         with fabric_settings(abort_exception=Exception):
             try:
                 # Эта штука работает, но всегда падает из-за exit и timeout по этому выхлоп вытягивается через файл
-                local(cmd)
+                shell_cmd(cmd)
             except Exception:
                 with open(output_tmp_file_name, 'r') as f:
                     output = f.read()

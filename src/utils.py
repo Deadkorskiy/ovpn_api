@@ -4,6 +4,9 @@ from flask import make_response
 from flask import Response
 from flask import request
 from .settings.settings import ACCESS_HEADERS, ACCESS_HEADER_NAME
+from fabric.api import settings as fabric_settings
+from fabric.api import local
+import logging
 
 
 def json_custom_response(
@@ -34,3 +37,15 @@ def auth_required(f):
         return f(*args, **kwargs)
     wrapper.__name__ = f.__name__
     return wrapper
+
+
+def shell_cmd(command: str) -> str:
+    with fabric_settings(abort_exception=Exception):
+        try:
+            result = str(local(command, capture=True))
+            logging.getLogger(__file__).debug(
+                'CMD:"{}". RESULT:{}'.format(command, result))
+            return result
+        except Exception as e:
+            logging.getLogger(__file__).error('Error during shell command execution. Command:"{}". Error:{}'.format(command, str(e)))
+            raise e

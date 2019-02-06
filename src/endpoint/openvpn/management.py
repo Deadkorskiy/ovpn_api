@@ -3,9 +3,9 @@ import logging
 import os
 from src.settings import settings
 from src.utils import json_custom_response, auth_required
-from fabric.api import local
 from fabric.api import settings as fabric_settings
 import uuid
+from ...utils import shell_cmd
 
 
 openvpn_management_bp = Blueprint('openvpn_management_bp', __name__, url_prefix='/api/openvpn/management')
@@ -29,7 +29,7 @@ def load_stats():
         with fabric_settings(abort_exception=Exception):
             try:
                 # Эта штука работает, но всегда падает из-за exit и timeout по этому выхлоп вытягивается через файл
-                local(cmd)
+                shell_cmd(cmd)
             except Exception:
                 with open(output_tmp_file_name, 'r') as f:
                     output = f.read()
@@ -70,7 +70,7 @@ def restart():
         with fabric_settings(abort_exception=Exception):
             try:
                 # Эта штука работает, но всегда падает из-за exit и timeout по этому выхлоп вытягивается через файл
-                local(cmd)
+                shell_cmd(cmd)
             finally:
                 with open(output_tmp_file_name, 'r') as f:
                     output = f.read()
