@@ -143,9 +143,9 @@ def load_client(unique_client_name):
     if unique_client_name.lower() in settings.IGNORED_CLIENT_NAMES:
         return json_custom_response(errors_occured=[{'message': 'Client not found'}], code=400)
 
-    client_crt_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
-    if os.path.exists(client_crt_path):
-        return json_custom_response(errors_occured=[{'message': 'Client already exists'}], code=400)
+    # client_crt_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
+    # if os.path.exists(client_crt_path):
+    #     return json_custom_response(errors_occured=[{'message': 'Client already exists'}], code=400)
 
     cluster_easy_rsa_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa')
 
@@ -174,7 +174,16 @@ def load_client(unique_client_name):
 
         raw_expired_date = shell_cmd('''openssl x509 -in "{}" -noout -enddate'''.format(crt_fp), capture=True)
         raw_expired_date = raw_expired_date.lower().replace('notafter=', '').replace(' ', '').replace('gmt', '')
-        date = datetime.strptime(raw_expired_date, '%b%d%H:%M:%S%Y')
+        try:
+            date = datetime.strptime(raw_expired_date, '%b%d%H:%M:%S%Y')
+        except Exception:
+            # для опенвна иметь 31 день в феврале норма, по этому если конвертация по дефолту не удается
+            # меняем число на 25 и пытаемся конвертировать еще раз
+            month = raw_expired_date[:3]
+            day = raw_expired_date[3:5]
+            raw_expired_date = raw_expired_date.replace('{}{}'.format(month, day), '{}25'.format(month))
+            date = datetime.strptime(raw_expired_date, '%b%d%H:%M:%S%Y')
+
         date = '{}Z'.format(date.strftime('%y%m%d%H%M%S'))
 
         record = '{}	{}		{}	unknown	{}\r\n'.format('R' if bool(is_revoked) else 'V', date, serial, dn)
