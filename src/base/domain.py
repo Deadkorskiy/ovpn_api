@@ -1,0 +1,3 @@
+
+class BaseDomain(object):
+    pass

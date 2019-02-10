@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-RUN apt-get update -y  --fix-missing
+RUN apt-get update -y --fix-missing
 
 # API
 RUN apt-get install -y software-properties-common

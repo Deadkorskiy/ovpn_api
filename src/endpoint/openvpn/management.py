@@ -53,17 +53,18 @@ def load_stats():
             logging.getLogger(__file__).error('Error during remove {}:{}'.format(output_tmp_file_name, str(e2)))
 
 
-@openvpn_management_bp.route("/restart/", methods=['POST'])
+@openvpn_management_bp.route("/status/", methods=['POST'])
 @auth_required
-def restart():
+def status():
     """Кол-во подклченных пользователей"""
     output = ''
     output_tmp_file_name = os.path.join(
         settings.TMP_OUTPUT_DIR,
-        'tmp_restart_output_{}.txt'.format(str(uuid.uuid4()))
+        'tmp_load-stats_output_{}.txt'.format(str(uuid.uuid4()))
 
     )
-    cmd = """timeout 120 bash -c 'supervisorctl restart openvpn > {}'""".format(
+    cmd = """timeout 7 bash -c 'HOST="{0}" && CMD="status" && (echo open "$HOST" && sleep 2 && echo "$CMD" && sleep 2 && echo "exit") | telnet' > {1}""".format(
+        settings.OPENVPN_TELNET_MANAGEMENT,
         output_tmp_file_name
     )
     try:
@@ -71,7 +72,7 @@ def restart():
             try:
                 # Эта штука работает, но всегда падает из-за exit и timeout по этому выхлоп вытягивается через файл
                 shell_cmd(cmd)
-            finally:
+            except Exception:
                 with open(output_tmp_file_name, 'r') as f:
                     output = f.read()
 
@@ -82,9 +83,9 @@ def restart():
             code=200
         )
     except Exception as e1:
-        logging.getLogger(__file__).error('Error during restart {}:{}'.format(output_tmp_file_name, str(e1)))
+        logging.getLogger(__file__).error('Error during status{}:{}'.format(output_tmp_file_name, str(e1)))
         return json_custom_response(
-            errors_occured=[{'message': 'Restart error', 'Internal error': str(e1)}],
+            errors_occured=[{'message': 'Load stats error', 'Internal error': str(e1)}],
             code=500
         )
     finally:
@@ -92,3 +93,4 @@ def restart():
             os.remove(output_tmp_file_name)
         except Exception as e2:
             logging.getLogger(__file__).error('Error during remove {}:{}'.format(output_tmp_file_name, str(e2)))
+

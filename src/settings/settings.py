@@ -7,7 +7,9 @@ TMP_OUTPUT_DIR = os.path.join(SRC_ROOT, 'var', 'tmp_output')
 
 OPENVPN_PATH = '/etc/openvpn'
 
-OPENVPN_TELNET_MANAGEMENT = '127.0.0.1 7505'
+OPENVPN_TELNET_MANAGEMENT_HOST = '127.0.0.1'
+OPENVPN_TELNET_MANAGEMENT_PORT = 7505
+OPENVPN_TELNET_MANAGEMENT = '{} {}'.format(OPENVPN_TELNET_MANAGEMENT_HOST, str(OPENVPN_TELNET_MANAGEMENT_PORT))
 
 ACCESS_HEADER_NAME = "api-key"
 
@@ -27,6 +29,8 @@ HOST = '127.0.0.1'
 
 PORT = 5000
 
+
+
 SENTRY_DSN = ''
 
 LOGGING_CONFIGURATION = {
@@ -44,7 +48,7 @@ LOGGING_CONFIGURATION = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "level": "INFO",
+            "level": "DEBUG",
             "formatter": "advanced",
             "stream": "ext://sys.stdout"
         },
@@ -66,10 +70,14 @@ LOGGING_CONFIGURATION = {
     "loggers": {
         '': {
             'handlers': ['console', 'file'],
-            'level': 'INFO',
+            'level': 'DEBUG',
         },
     }
 }
+
+TESTS_API_ADDRESS = 'http://{}:{}'.format(HOST, PORT)
+
+TESTS_API_TOKEN = ACCESS_HEADERS[0]
 
 try:
     from .local_settings import *

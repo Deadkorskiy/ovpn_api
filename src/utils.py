@@ -7,6 +7,7 @@ from .settings.settings import ACCESS_HEADERS, ACCESS_HEADER_NAME
 from fabric.api import settings as fabric_settings
 from fabric.api import local
 import logging
+import threading
 
 
 def json_custom_response(
@@ -40,12 +41,38 @@ def auth_required(f):
 
 
 def shell_cmd(command: str, capture=False, shell=None) -> str:
+    result = error = None
     with fabric_settings(abort_exception=Exception):
         try:
             result = str(local(command, capture=capture, shell=shell))
-            logging.getLogger(__file__).debug(
-                'CMD:"{}". RESULT:{}'.format(command, result))
-            return result
         except Exception as e:
             logging.getLogger(__file__).error('Error during shell command execution. Command:"{}". Error:{}'.format(command, str(e)))
-            raise e
+            error = e
+        finally:
+            logging.getLogger(__file__).debug(
+                'CMD:"{}". RESULT:{}'.format(command, result))
+            if error:
+                raise error
+            else:
+                return result
+
+
+def timeout(func, args: tuple=(), kwargs: dict = {}, timeout: int = 3, default=None):
+    """Вызывает функцию с timeout-ом"""
+
+    class InterruptableThread(threading.Thread):
+        def __init__(self):
+            threading.Thread.__init__(self)
+            self.result = None
+
+        def run(self):
+            try:
+                self.result = func(*args, **kwargs)
+            except:
+                self.result = default
+
+    it = InterruptableThread()
+    it.start()
+    it.join(timeout)
+    result = getattr(it, 'result', default)
+    return result if result is not None else default
