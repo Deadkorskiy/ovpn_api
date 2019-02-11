@@ -21,7 +21,7 @@ def __exception_to_response__(error: 'typing.Union[Exception, HTTPException]') -
         str(getattr(flask_request, 'host', '')),
         str(getattr(flask_request, 'host_url', ''))
     )
-    logging.getLogger(__file__).error("API error: {} Additional info:[{}]".format(str(error), request_info))
+    logging.getLogger(__file__).debug("API error: {} Additional info:[{}]".format(str(error), request_info))
 
     if isinstance(error, HTTPException):
         errors_occured = [{

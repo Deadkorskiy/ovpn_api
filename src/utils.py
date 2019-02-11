@@ -40,13 +40,14 @@ def auth_required(f):
     return wrapper
 
 
-def shell_cmd(command: str, capture=False, shell=None) -> str:
+def shell_cmd(command: str, capture=False, shell=None, no_logs: bool = False) -> str:
     result = error = None
     with fabric_settings(abort_exception=Exception):
         try:
             result = str(local(command, capture=capture, shell=shell))
         except Exception as e:
-            logging.getLogger(__file__).error('Error during shell command execution. Command:"{}". Error:{}'.format(command, str(e)))
+            if not no_logs:
+                logging.getLogger(__file__).error('Error during shell command execution. Command:"{}". Error:{}'.format(command, str(e)))
             error = e
         finally:
             logging.getLogger(__file__).debug(
