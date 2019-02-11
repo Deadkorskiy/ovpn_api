@@ -201,7 +201,7 @@ def load_client(unique_client_name):
     key = body.get('data', {}).get('client_key', '')
     crt = body.get('data', {}).get('client_crt', '')
     req = body.get('data', {}).get('client_req', '')
-    is_revoked = body.get('data', {}).get('is_revoked', False)
+    is_revoked = body.get('data', {}).get('is_revoked', True)
 
     # если сертификат уже загружен - проверяем что контент файла и запроса совпадают, если клиента еще нет- загружаем
     client_crt_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa/pki/issued', '{}.crt'.format(unique_client_name))
