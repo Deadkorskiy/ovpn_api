@@ -209,7 +209,7 @@ def load_client(unique_client_name):
         f = open(client_crt_path, 'r')
         data = f.read()
         f.close()
-        if data != crt:
+        if re.findall('\w\d', data) != re.findall('\w\d', crt):
             return json_custom_response(errors_occured=[{'message': 'Different client already exists'}], code=400)
     else:
         with fabric_settings(abort_exception=Exception):
