@@ -12,6 +12,7 @@ openvpn_management_bp = Blueprint('openvpn_management_bp', __name__, url_prefix=
 
 
 @openvpn_management_bp.route('/load-all-user-stats/', methods=['POST'])
+@auth_required
 def load_all_user_stats():
     host, port = settings.OPENVPN_TELNET_MANAGEMENT.split()
 
@@ -50,7 +51,9 @@ def load_all_user_stats():
             if 'CLIENT_LIST' in line and "HEADER" not in line:
                 parsed_data.append(parse_client(line))
         return json_custom_response(
-            data=parsed_data,
+            data={
+                'client_list': parsed_data
+            },
             code=200
         )
     except IndexError as e:
