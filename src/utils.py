@@ -40,7 +40,7 @@ def auth_required(f):
     return wrapper
 
 
-def shell_cmd(command: str, capture=False, shell=None, no_logs: bool = False) -> str:
+def shell_cmd(command: str, capture=True, shell=None, no_logs: bool = False) -> str:
     result = error = None
     with fabric_settings(abort_exception=Exception):
         try:

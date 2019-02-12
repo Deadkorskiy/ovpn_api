@@ -26,13 +26,12 @@ def load_stats():
         output_tmp_file_name
     )
     try:
-        with fabric_settings(abort_exception=Exception):
-            try:
-                # Эта штука работает, но всегда падает из-за exit и timeout по этому выхлоп вытягивается через файл
-                shell_cmd(cmd)
-            except Exception:
-                with open(output_tmp_file_name, 'r') as f:
-                    output = f.read()
+        try:
+            # Эта штука работает, но всегда падает из-за exit и timeout по этому выхлоп вытягивается через файл
+            shell_cmd(cmd)
+        except Exception:
+            with open(output_tmp_file_name, 'r') as f:
+                output = f.read()
 
         return json_custom_response(
             data={
@@ -68,13 +67,12 @@ def status():
         output_tmp_file_name
     )
     try:
-        with fabric_settings(abort_exception=Exception):
-            try:
-                # Эта штука работает, но всегда падает из-за exit и timeout по этому выхлоп вытягивается через файл
-                shell_cmd(cmd)
-            except Exception:
-                with open(output_tmp_file_name, 'r') as f:
-                    output = f.read()
+        try:
+            # Эта штука работает, но всегда падает из-за exit и timeout по этому выхлоп вытягивается через файл
+            shell_cmd(cmd)
+        except Exception:
+            with open(output_tmp_file_name, 'r') as f:
+                output = f.read()
 
         return json_custom_response(
             data={

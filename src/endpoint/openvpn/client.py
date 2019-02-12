@@ -34,12 +34,11 @@ def build_client(unique_client_name):
         is_new = False
     else:
         command = 'timeout 10 bash -c "cd {}; ./easyrsa build-client-full {} nopass"'.format(cluster_easy_rsa_path, unique_client_name)
-        with fabric_settings(abort_exception=Exception):
-            try:
-                shell_cmd(command, capture=True)
-            except Exception as e:
-                logging.getLogger(__file__).error('Error during client {} building:{}'.format(unique_client_name, str(e)))
-                return json_custom_response(errors_occured=[{'message': 'Building error'}], code=500)
+        try:
+            shell_cmd(command, capture=True)
+        except Exception as e:
+            logging.getLogger(__file__).error('Error during client {} building:{}'.format(unique_client_name, str(e)))
+            return json_custom_response(errors_occured=[{'message': 'Building error'}], code=500)
 
     client_crt_path = os.path.join(cluster_easy_rsa_path, 'pki/issued/{}.crt'.format(unique_client_name))
     client_key_path = os.path.join(cluster_easy_rsa_path, 'pki/private/{}.key'.format(unique_client_name))
@@ -83,40 +82,38 @@ def revoke_client(unique_client_name):
 
     cluster_easy_rsa_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa')
 
-    with fabric_settings(abort_exception=Exception):
+    try:
+        shell_cmd('timeout 5 bash -c "cd {} && echo yes | ./easyrsa revoke {}"'.format(cluster_easy_rsa_path, unique_client_name))
+        shell_cmd('timeout 5 bash -c "cd {} && ./easyrsa gen-crl"'.format(cluster_easy_rsa_path))
+        shell_cmd('cd {} && chmod 775 crl.pem'.format(os.path.join(cluster_easy_rsa_path, 'pki')))
+    except Exception as e:
+
+        # Если сертификат уже отозван отдаем 200
         try:
-            shell_cmd('timeout 5 bash -c "cd {} && echo yes | ./easyrsa revoke {}"'.format(cluster_easy_rsa_path, unique_client_name))
-            shell_cmd('timeout 5 bash -c "cd {} && ./easyrsa gen-crl"'.format(cluster_easy_rsa_path))
-            shell_cmd('cd {} && chmod 775 crl.pem'.format(os.path.join(cluster_easy_rsa_path, 'pki')))
-        except Exception as e:
-
-            # Если сертификат уже отозван отдаем 200
-            try:
-                cluster_easy_rsa_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa')
-                index_txt_path = os.path.join(cluster_easy_rsa_path, 'pki', 'index.txt')
-                with fabric_settings(abort_exception=Exception):
-                    index_txt_content = ''
-                    with open(index_txt_path, 'r+') as f:
-                        index_txt_content = f.read()
-                        f.truncate()
-                    revoked_client_string = re.findall(
-                        '[R].{1,10}\d{1,12}.{1,700}CN=' + str(unique_client_name) + '.{0,150}\n',
-                        index_txt_content
-                    )
-                    if len(revoked_client_string) > 0:
-                        return json_custom_response(
-                            data={
-                                'message': 'Already revoked',
-                                'client_name': unique_client_name,
-                            },
-                            code=200
-                        )
-            except Exception as e2:
-                logging.getLogger(__file__).error('Revoke error, during ensure that crt already revoked. Error:{}'.format(str(e2)))
+            cluster_easy_rsa_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa')
+            index_txt_path = os.path.join(cluster_easy_rsa_path, 'pki', 'index.txt')
+            index_txt_content = ''
+            with open(index_txt_path, 'r+') as f:
+                index_txt_content = f.read()
+                f.truncate()
+            revoked_client_string = re.findall(
+                '[R].{1,10}\d{1,12}.{1,700}CN=' + str(unique_client_name) + '.{0,150}\n',
+                index_txt_content
+            )
+            if len(revoked_client_string) > 0:
+                return json_custom_response(
+                    data={
+                        'message': 'Already revoked',
+                        'client_name': unique_client_name,
+                    },
+                    code=200
+                )
+        except Exception as e2:
+            logging.getLogger(__file__).error('Revoke error, during ensure that crt already revoked. Error:{}'.format(str(e2)))
 
 
-            logging.getLogger(__file__).error('Error during client {} revoke:{}'.format(unique_client_name, str(e)))
-            return json_custom_response(errors_occured=[{'message': 'Revoke error'}], code=500)
+        logging.getLogger(__file__).error('Error during client {} revoke:{}'.format(unique_client_name, str(e)))
+        return json_custom_response(errors_occured=[{'message': 'Revoke error'}], code=500)
 
     return json_custom_response(
         data={
@@ -148,34 +145,32 @@ def remove_client(unique_client_name):
 
     cluster_easy_rsa_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa')
 
-    with fabric_settings(abort_exception=Exception):
+    # Если сертификат не отозван его нельзя удалять
+    try:
+        cluster_easy_rsa_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa')
+        index_txt_path = os.path.join(cluster_easy_rsa_path, 'pki', 'index.txt')
+        index_txt_content = ''
+        with open(index_txt_path, 'r+') as f:
+            index_txt_content = f.read()
+            f.truncate()
+        revoked_client_string = re.findall(
+            '[R].{1,10}\d{1,12}.{1,700}CN=' + str(unique_client_name) + '.{0,150}\n',
+            index_txt_content
+        )
+        if len(revoked_client_string) < 1:
+            return json_custom_response(errors_occured=[{'message': 'Client is not revoked'}], code=400)
+    except Exception as e2:
+        logging.getLogger(__file__).error(
+            'Revoke error, during ensure that crt already revoked. Error:{}'.format(str(e2)))
+        return json_custom_response(errors_occured=[{'message': 'Remove error'}], code=500)
 
-        # Если сертификат не отозван его нельзя удалять
-        try:
-            cluster_easy_rsa_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa')
-            index_txt_path = os.path.join(cluster_easy_rsa_path, 'pki', 'index.txt')
-            index_txt_content = ''
-            with open(index_txt_path, 'r+') as f:
-                index_txt_content = f.read()
-                f.truncate()
-            revoked_client_string = re.findall(
-                '[R].{1,10}\d{1,12}.{1,700}CN=' + str(unique_client_name) + '.{0,150}\n',
-                index_txt_content
-            )
-            if len(revoked_client_string) < 1:
-                return json_custom_response(errors_occured=[{'message': 'Client is not revoked'}], code=400)
-        except Exception as e2:
-            logging.getLogger(__file__).error(
-                'Revoke error, during ensure that crt already revoked. Error:{}'.format(str(e2)))
-            return json_custom_response(errors_occured=[{'message': 'Remove error'}], code=500)
-
-        try:
-            shell_cmd('rm {} -f'.format(os.path.join(cluster_easy_rsa_path, 'pki', 'private', unique_client_name + '.key')))
-            shell_cmd('rm {} -f'.format(os.path.join(cluster_easy_rsa_path, 'pki', 'issued', unique_client_name + '.crt')))
-            shell_cmd('rm {} -f'.format(os.path.join(cluster_easy_rsa_path, 'pki', 'reqs', unique_client_name + '.req')))
-        except Exception as e:
-            logging.getLogger(__file__).error('Error during client {} remove:{}'.format(unique_client_name, str(e)))
-            return json_custom_response(errors_occured=[{'message': 'Remove error'}], code=500)
+    try:
+        shell_cmd('rm {} -f'.format(os.path.join(cluster_easy_rsa_path, 'pki', 'private', unique_client_name + '.key')))
+        shell_cmd('rm {} -f'.format(os.path.join(cluster_easy_rsa_path, 'pki', 'issued', unique_client_name + '.crt')))
+        shell_cmd('rm {} -f'.format(os.path.join(cluster_easy_rsa_path, 'pki', 'reqs', unique_client_name + '.req')))
+    except Exception as e:
+        logging.getLogger(__file__).error('Error during client {} remove:{}'.format(unique_client_name, str(e)))
+        return json_custom_response(errors_occured=[{'message': 'Remove error'}], code=500)
 
     return json_custom_response(
         data={
@@ -212,14 +207,13 @@ def load_client(unique_client_name):
         if re.findall('\w\d', data) != re.findall('\w\d', crt):
             return json_custom_response(errors_occured=[{'message': 'Different client already exists'}], code=400)
     else:
-        with fabric_settings(abort_exception=Exception):
-            try:
-                shell_cmd('echo "{}" > {}'.format(key, os.path.join(cluster_easy_rsa_path, 'pki', 'private', unique_client_name + '.key')))
-                shell_cmd('echo "{}" > {}'.format(crt, os.path.join(cluster_easy_rsa_path, 'pki', 'issued', unique_client_name + '.crt')))
-                shell_cmd('echo "{}" > {}'.format(req, os.path.join(cluster_easy_rsa_path, 'pki', 'reqs', unique_client_name + '.req')))
-            except Exception as e:
-                logging.getLogger(__file__).error('Error during client {} load:{}'.format(unique_client_name, str(e)))
-                return json_custom_response(errors_occured=[{'message': 'Load error'}], code=500)
+        try:
+            shell_cmd('echo "{}" > {}'.format(key, os.path.join(cluster_easy_rsa_path, 'pki', 'private', unique_client_name + '.key')))
+            shell_cmd('echo "{}" > {}'.format(crt, os.path.join(cluster_easy_rsa_path, 'pki', 'issued', unique_client_name + '.crt')))
+            shell_cmd('echo "{}" > {}'.format(req, os.path.join(cluster_easy_rsa_path, 'pki', 'reqs', unique_client_name + '.req')))
+        except Exception as e:
+            logging.getLogger(__file__).error('Error during client {} load:{}'.format(unique_client_name, str(e)))
+            return json_custom_response(errors_occured=[{'message': 'Load error'}], code=500)
 
     # обновляем index.txt
     try:
@@ -308,37 +302,36 @@ def restore_client(unique_client_name):
     cluster_easy_rsa_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa')
     index_txt_path = os.path.join(cluster_easy_rsa_path, 'pki', 'index.txt')
 
-    with fabric_settings(abort_exception=Exception):
-        try:
-            index_txt_content = ''
-            with open(index_txt_path, 'r+') as f:
-                index_txt_content = f.read()
-                f.truncate()
+    try:
+        index_txt_content = ''
+        with open(index_txt_path, 'r+') as f:
+            index_txt_content = f.read()
+            f.truncate()
 
-            revoked_client_string = re.findall('[R].{1,10}\d{1,12}.{1,700}CN=' + str(unique_client_name) + '.{0,150}\n', index_txt_content)
-            if len(revoked_client_string) != 1:
-                return json_custom_response(errors_occured=[{'message': 'Client for restore not found'}], code=400)
-            revoked_client_string = str(revoked_client_string[0])
-            restored_client_string = \
-                'V\t{}\t\t{}\t{}\t{}\r\n'.format(
-                    revoked_client_string.split()[1],  # 280522060444Z
-                    revoked_client_string.split()[3],  # 2A6DA37E9D7AFE75BC8E5DA18C0CDC62
-                    revoked_client_string.split()[4],  # unknown
-                    revoked_client_string.split()[5],  # /CN=1e3d210b-2862-4b68-a10a-43aff837ddfd
-                )
-            index_txt_content = index_txt_content.replace(revoked_client_string, restored_client_string)
+        revoked_client_string = re.findall('[R].{1,10}\d{1,12}.{1,700}CN=' + str(unique_client_name) + '.{0,150}\n', index_txt_content)
+        if len(revoked_client_string) != 1:
+            return json_custom_response(errors_occured=[{'message': 'Client for restore not found'}], code=400)
+        revoked_client_string = str(revoked_client_string[0])
+        restored_client_string = \
+            'V\t{}\t\t{}\t{}\t{}\r\n'.format(
+                revoked_client_string.split()[1],  # 280522060444Z
+                revoked_client_string.split()[3],  # 2A6DA37E9D7AFE75BC8E5DA18C0CDC62
+                revoked_client_string.split()[4],  # unknown
+                revoked_client_string.split()[5],  # /CN=1e3d210b-2862-4b68-a10a-43aff837ddfd
+            )
+        index_txt_content = index_txt_content.replace(revoked_client_string, restored_client_string)
 
-            with open(index_txt_path, 'r+') as f:
-                f.seek(0)
-                f.write(index_txt_content)
-                f.truncate()
+        with open(index_txt_path, 'r+') as f:
+            f.seek(0)
+            f.write(index_txt_content)
+            f.truncate()
 
-            shell_cmd('chmod 775 {}'.format(index_txt_path))
-            shell_cmd('timeout 5 bash -c "cd {} && ./easyrsa gen-crl"'.format(cluster_easy_rsa_path))
-            shell_cmd('cd {} && chmod 775 crl.pem'.format(os.path.join(cluster_easy_rsa_path, 'pki')))
-        except Exception as e:
-            logging.getLogger(__file__).error('Error during client {} restore:{}'.format(unique_client_name, str(e)))
-            return json_custom_response(errors_occured=[{'message': 'Restore error'}], code=500)
+        shell_cmd('chmod 775 {}'.format(index_txt_path))
+        shell_cmd('timeout 5 bash -c "cd {} && ./easyrsa gen-crl"'.format(cluster_easy_rsa_path))
+        shell_cmd('cd {} && chmod 775 crl.pem'.format(os.path.join(cluster_easy_rsa_path, 'pki')))
+    except Exception as e:
+        logging.getLogger(__file__).error('Error during client {} restore:{}'.format(unique_client_name, str(e)))
+        return json_custom_response(errors_occured=[{'message': 'Restore error'}], code=500)
 
     return json_custom_response(
         data={
