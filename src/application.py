@@ -16,5 +16,6 @@ if __name__ == '__main__':
         application.run(
             debug=settings.DEBUG,
             host=settings.HOST,
-            port=settings.PORT
+            port=settings.PORT,
+            threaded=False
         )
