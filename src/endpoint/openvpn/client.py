@@ -259,9 +259,9 @@ def load_client(unique_client_name):
 
         if is_revoked:
             revoked_date = '{}Z'.format(datetime.utcnow().strftime('%y%m%d%H%M%S'))
-            record = 'R\t{}\t{}\t{}\tunknown\t{}\r\n'.format(expired_date, revoked_date, serial, dn)
+            record = 'R\t{}\t{}\t{}\tunknown\t{}\n'.format(expired_date, revoked_date, serial, dn)
         else:
-            record = 'V\t{}\t\t{}\tunknown\t{}\r\n'.format(expired_date, serial, dn)
+            record = 'V\t{}\t\t{}\tunknown\t{}\n'.format(expired_date, serial, dn)
 
         f = open(index_txt_path, 'a')
         f.write(record)
@@ -313,7 +313,7 @@ def restore_client(unique_client_name):
             return json_custom_response(errors_occured=[{'message': 'Client for restore not found'}], code=400)
         revoked_client_string = str(revoked_client_string[0])
         restored_client_string = \
-            'V\t{}\t\t{}\t{}\t{}\r\n'.format(
+            'V\t{}\t\t{}\t{}\t{}\n'.format(
                 revoked_client_string.split()[1],  # 280522060444Z
                 revoked_client_string.split()[3],  # 2A6DA37E9D7AFE75BC8E5DA18C0CDC62
                 revoked_client_string.split()[4],  # unknown
