@@ -43,6 +43,8 @@ def auth_required(f):
 def shell_cmd(command: str, capture=True, shell=None, no_logs: bool = False) -> str:
     result = error = None
     with fabric_settings(abort_exception=Exception):
+        from fabric.state import output
+        output.stderr = False
         try:
             result = str(local(command, capture=capture, shell=shell))
         except Exception as e:
