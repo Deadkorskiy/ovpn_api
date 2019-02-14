@@ -16,8 +16,9 @@
     register: commit_hash
 
   - name: Creating build_info.json
+    sudo: yes
     shell: 'echo "{\n  \"branch\": \"{{branch.stdout}}\", \n  \"commit\": \"{{commit_hash.stdout}}\", \n  \"datetime\": \"{{ ansible_date_time.iso8601 }}\"\n}" > {{ build_info_json_path }}'
 
   - name: Restart container
-      sudo: yes
-      raw: "cd \"$(dirname \"{{ docker_compose_dest }}\")\" && docker-compose down && docker-compose up -d --build"
+    sudo: yes
+    raw: "cd \"$(dirname \"{{ docker_compose_dest }}\")\" && docker-compose down && docker-compose up -d --build"
