@@ -2,6 +2,7 @@ from src.base.use_case import BaseUseCaseRequest, BaseUseCase, BaseUseCaseRespon
 from src.utils import timeout
 from src.utils import shell_cmd
 from src.settings import settings
+from src.libs.db_gateway import get_db_gateway
 import os
 import uuid
 import re
@@ -43,6 +44,7 @@ class HealthUseCase(BaseUseCase):
             checks = [
                 (self.check_telnet, self.HealthCheckResponse('telnet', False)),
                 (self.check_openvpn, self.HealthCheckResponse('openvpn', False)),
+                (self.check_redis, self.HealthCheckResponse('redis', False))
             ]
 
             check_results = []
@@ -98,6 +100,15 @@ class HealthUseCase(BaseUseCase):
                 result.is_up = True
             else:
                 raise ApplicationError(message=str(response))
+        except Exception as e:
+            result.error = str(e)
+        return result
+
+    def check_redis(self, result: HealthCheckResponse) -> HealthCheckResponse:
+        try:
+            db = get_db_gateway('redis')
+            db.get('health')
+            result.is_up = True
         except Exception as e:
             result.error = str(e)
         return result

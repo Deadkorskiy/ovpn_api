@@ -33,6 +33,15 @@ HOST = '127.0.0.1'
 
 PORT = 5000
 
+DATABASE = {
+    'redis': {
+        'dbms': 'redis',
+        'host': '127.0.0.1',
+        'port': 6379,
+        'db': 1,
+        'password': 'c1_redis_master_password'
+    }
+}
 
 BUILD_INFO = {
     'commit': None,

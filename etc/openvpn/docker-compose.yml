@@ -23,8 +23,13 @@ services:
         restart: always
         volumes:
             - ../nginx.conf:/etc/nginx/nginx.conf
-            - /var/apps/onetimevpn/docker_persistent/var/log/nginx:/var/log/nginx
-        ports:
-            - "0.0.0.0:8080:8080"
+            - ../../var/log/nginx:/var/log/nginx
         depends_on:
             - gunicorn
+
+    c1_redis_master:
+        image: 'redis'
+        network_mode: host
+        restart: always
+        container_name: "c1_redis_master"
+        command: "redis-server --bind 127.0.0.1 --port 6379 --tcp-keepalive 60 --requirepass c1_redis_master_password --maxmemory-policy noeviction"

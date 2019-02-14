@@ -24,6 +24,9 @@
       sudo: yes
       raw: "mkdir -p {{ docker_persistent_dir }}/var/log && mkdir -p {{ docker_persistent_dir }}/var/tmp_output"
 
+    - name: "Setting {{ docker_persistent_dir }} permission"
+      raw: "chown nobody:nogroup -R  {{ docker_persistent_dir }} && chmod 777 -R  {{ docker_persistent_dir }}"
+
     - name: Send nginx.conf
       copy:
         src: "{{ vpn_data_src_dir }}/../nginx.conf"
@@ -35,12 +38,12 @@
         dest: "{{ ansistrano_deploy_to }}/current/etc/nginx.conf"
 
     - name: Send docker-compose.yml
-      copy:
+      template:
         src: "{{ docker_compose_src }}"
         dest: "{{ docker_compose_dest }}"
 
     - name: Send local_settings.py
-      copy:
+      template:
         src: "{{ local_settings_src }}"
         dest: "{{ local_settings_dest }}"
 
