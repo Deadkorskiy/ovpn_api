@@ -12,7 +12,7 @@ from src.settings.settings import TESTS_API_ADDRESS, TESTS_API_TOKEN
 from src.settings import settings
 import uuid
 import logging
-
+import copy
 
 logger = logging.getLogger(__file__)
 
@@ -372,7 +372,6 @@ class APIOpenVPNTestCase(BaseTestCase):
         logger.debug(response.text)
         response.raise_for_status()
 
-
         url = "{}/api/openvpn/client/revoke/{}".format(TESTS_API_ADDRESS, client_name)
         response = requests.request("POST", url, headers=headers)
         logger.debug(response.text)
@@ -411,3 +410,34 @@ class APIOpenVPNTestCase(BaseTestCase):
         response = requests.request("POST", url, headers=headers)
         logger.debug(response.text)
         assert response.status_code == 400
+
+    def test_api_auth(self):
+
+        client_name = self.client_name_prefix + str(uuid.uuid4())
+        url = "{}/api/openvpn/client/build/{}".format(TESTS_API_ADDRESS, client_name)
+
+        response = requests.request("POST", url, headers=headers)
+        assert response.status_code != 403
+
+        invalid_headers = copy.copy(headers)
+        invalid_headers['Api-Key'] = 'invalid-api-key'
+        response = requests.request("POST", url, headers=invalid_headers)
+        assert response.status_code == 403
+
+    def test_load_stats(self):
+        url = "{}/api/openvpn/management/load_stats".format(TESTS_API_ADDRESS)
+
+        response = requests.request("POST", url, headers=headers)
+        assert response.status_code == 200
+
+    def test_load_all_users_stats(self):
+        url = "{}/api/openvpn/management/load_all_user_stats".format(TESTS_API_ADDRESS)
+
+        response = requests.request("POST", url, headers=headers)
+        assert response.status_code == 200
+
+    def test_status(self):
+        url = "{}/api/openvpn/management/status".format(TESTS_API_ADDRESS)
+
+        response = requests.request("POST", url, headers=headers)
+        assert response.status_code == 200
