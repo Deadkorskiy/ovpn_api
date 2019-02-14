@@ -57,6 +57,8 @@ class HealthUseCase(BaseUseCase):
             for row in check_results:
                 main_service_result.details['dependencies'].append(row.serialize())
 
+            main_service_result.details['deploy'] = settings.BUILD_INFO
+
         except Exception as e:
             main_service_result.error = str(e)
         return HealthUseCaseResponse(value=main_service_result.serialize())

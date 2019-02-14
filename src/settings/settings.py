@@ -3,6 +3,10 @@ import os
 
 SRC_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
+BUILD_INFO_JSON_PATH = '{}/etc/build_info.json'.format(SRC_ROOT)
+
+LOG_DIR_PATH = os.path.abspath(os.path.join(SRC_ROOT, 'var', 'log'))
+
 TMP_OUTPUT_DIR = os.path.join(SRC_ROOT, 'var', 'tmp_output')
 
 OPENVPN_PATH = '/etc/openvpn'
@@ -30,6 +34,21 @@ HOST = '127.0.0.1'
 PORT = 5000
 
 
+BUILD_INFO = {
+    'commit': None,
+    'datetime': None,
+    'branch': None
+}
+try:
+    import json
+    __build_info__ = {}
+    with open(BUILD_INFO_JSON_PATH, 'r') as f:
+        __build_info__ = json.loads(f.read())
+    BUILD_INFO['commit'] = __build_info__.get('commit')
+    BUILD_INFO['branch'] = __build_info__.get('branch')
+    BUILD_INFO['datetime'] = __build_info__.get('datetime')
+except Exception as e:
+    print('Deploy info load failure:{}'.format(str(e)))
 
 SENTRY_DSN = ''
 
@@ -56,16 +75,11 @@ LOGGING_CONFIGURATION = {
             "class": "logging.handlers.RotatingFileHandler",
             "level": "ERROR",
             "formatter": "advanced",
-            "filename": os.path.abspath(os.path.join(SRC_ROOT, os.path.join(SRC_ROOT, 'var', 'log', 'api.log'))),
+            "filename": os.path.abspath(os.path.join(LOG_DIR_PATH, 'api.log')),
             "maxBytes": 10485760,
             "backupCount": 20,
             "encoding": "utf8"
         },
-        # 'sentry': {
-        #     'level': 'DEBUG',
-        #     'class': 'raven.handlers.logging.SentryHandler',
-        #     'dsn': SENTRY_DSN,
-        # }
     },
     "loggers": {
         '': {
@@ -78,6 +92,8 @@ LOGGING_CONFIGURATION = {
 TESTS_API_ADDRESS = 'http://{}:{}'.format(HOST, PORT)
 
 TESTS_API_TOKEN = ACCESS_HEADERS[0]
+
+
 
 try:
     from .local_settings import *
