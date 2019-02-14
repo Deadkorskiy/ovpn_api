@@ -5,3 +5,4 @@ gunicorn
 raven
 werkzeug
 gevent
+redis
