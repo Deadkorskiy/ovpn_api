@@ -82,11 +82,24 @@ def revoke_client(unique_client_name):
 
     cluster_easy_rsa_path = os.path.join(settings.OPENVPN_PATH, 'easy-rsa')
 
+    command = None
     try:
-        shell_cmd('timeout 5 bash -c "cd {} && echo yes | ./easyrsa revoke {}"'.format(cluster_easy_rsa_path, unique_client_name))
-        shell_cmd('timeout 5 bash -c "cd {} && ./easyrsa gen-crl"'.format(cluster_easy_rsa_path))
-        shell_cmd('cd {} && chmod 775 crl.pem'.format(os.path.join(cluster_easy_rsa_path, 'pki')))
+        command = 'timeout 5 bash -c "cd {} && echo yes | ./easyrsa revoke {}"'.format(cluster_easy_rsa_path, unique_client_name)
+        shell_cmd(command, no_logs=True)
+
+        command = 'timeout 5 bash -c "cd {} && ./easyrsa gen-crl"'.format(cluster_easy_rsa_path)
+        shell_cmd(command)
+
+        command = 'cd {} && chmod 775 crl.pem'.format(os.path.join(cluster_easy_rsa_path, 'pki'))
+        shell_cmd(command)
     except Exception as e:
+
+        # эта проверка нужна только для того чтобы не писать "лишние" ошибки в лог при вызове shell_cmd.
+        # Часто бывает что уже для отозванного сертификата вызывается ревоук и shell падает на
+        # команде ./easyrsa revoke {} (см. выше), по этому она вызывается с опцией no_logs и тут уже игнорится
+        # ошибка Already revoked, serial number, а если какая то другая - то пишится в лог.
+        if 'Already revoked, serial number'.lower() not in str(e).lower():
+            logging.getLogger(__file__).error('Error during shell command execution. Command:"{}". Error:{}'.format(command, str(e)))
 
         # Если сертификат уже отозван отдаем 200
         try:
