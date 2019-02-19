@@ -7,6 +7,9 @@ import os
 import uuid
 import re
 import socket
+import logging
+
+logger = logging.getLogger(__file__)
 
 
 class HealthUseCaseRequest(BaseUseCaseRequest):
@@ -59,10 +62,11 @@ class HealthUseCase(BaseUseCase):
             for row in check_results:
                 main_service_result.details['dependencies'].append(row.serialize())
 
-            main_service_result.details['deploy'] = settings.BUILD_INFO
+            main_service_result.details['build'] = settings.BUILD_INFO
 
         except Exception as e:
-            main_service_result.error = str(e)
+            logger.critical('Health "{}" is down:{}'.format(str(main_service_result.service_name), str(e)))
+            main_service_result.error = ''
         return HealthUseCaseResponse(value=main_service_result.serialize())
 
     def check_openvpn(self, result: HealthCheckResponse) -> HealthCheckResponse:
@@ -88,7 +92,8 @@ class HealthUseCase(BaseUseCase):
             result.is_up = True
             result.details.update({'pid': pid})
         except Exception as e:
-            result.error = str(e)
+            logger.critical('Health "{}" is down:{}'.format(str(result.service_name), str(e)))
+            result.error = ''
         return result
 
     def check_telnet(self, result: HealthCheckResponse) -> HealthCheckResponse:
@@ -101,7 +106,8 @@ class HealthUseCase(BaseUseCase):
             else:
                 raise ApplicationError(message=str(response))
         except Exception as e:
-            result.error = str(e)
+            logger.critical('Health "{}" is down:{}'.format(str(result.service_name), str(e)))
+            result.error = ''
         return result
 
     def check_redis(self, result: HealthCheckResponse) -> HealthCheckResponse:
@@ -110,5 +116,6 @@ class HealthUseCase(BaseUseCase):
             db.get('health')
             result.is_up = True
         except Exception as e:
-            result.error = str(e)
+            logger.critical('Health "{}" is down:{}'.format(str(result.service_name), str(e)))
+            result.error = ''
         return result
