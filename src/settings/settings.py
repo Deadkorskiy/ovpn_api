@@ -22,7 +22,8 @@ ACCESS_HEADERS = [
 ]
 
 IGNORED_CLIENT_NAMES = [    # low case only
-    'server'
+    'server',
+    'sys_health'
 ]
 
 SECRET_KEY = 'aksjdfkj385602836547hajkdsfvn;skjdf;kjhIUGTUYOAD08544967597%(^%976fgawgef'
