@@ -29,13 +29,8 @@
 
     - name: Send nginx.conf
       copy:
-        src: "{{ vpn_data_src_dir }}/../nginx.conf"
-        dest: "{{ ansistrano_deploy_to }}/current/etc/nginx.conf"
-
-    - name: Send nginx.conf
-      copy:
-        src: "{{ vpn_data_src_dir }}/../nginx.conf"
-        dest: "{{ ansistrano_deploy_to }}/current/etc/nginx.conf"
+        src: "{{ nginx_conf_src }}"
+        dest: "{{ nginx_conf_dest }}"
 
     - name: Send docker-compose.yml
       template:

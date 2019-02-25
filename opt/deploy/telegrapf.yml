@@ -1,0 +1,47 @@
+# обновляет приложение
+
+# Tested at:
+# Ubuntu 16.04
+# Ubuntu 18.04
+
+---
+- name: Update app
+  hosts: vpn
+  sudo: yes
+
+  tasks:
+
+    - name: Deploy started
+      debug:
+        msg: "{{ ansible_host }} deploy started"
+
+    - name: Download the package for ubuntu
+      apt:
+        deb: https://github.com/orangesys/telegraf-output-orangesys/releases/download/{{ telegraf_agent_version }}/telegraf_{{ telegraf_agent_version }}-1_amd64.deb
+      when: ansible_os_family == "Debian"
+
+    - name: Download the package for Centos
+      yum:
+        name: https://github.com/orangesys/telegraf-output-orangesys/releases/download/{{ telegraf_agent_version }}/telegraf-{{ telegraf_agent_version }}-1.x86_64.rpm
+      when: ansible_os_family == "RedHat"
+
+    - name: Install sysstat for ubuntu
+      apt:
+        name: sysstat
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Install sysstat for Centos
+      yum:
+        name: sysstat
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Send telegraf.conf
+      template:
+        src: "{{ telegraf_src }}"
+        dest: "{{ telegraf_dest }}"
+
+    - name: Restart telegraf
+      raw: "service telegraf start"
+      sudo: yes
