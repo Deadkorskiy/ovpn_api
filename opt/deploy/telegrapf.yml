@@ -1,11 +1,9 @@
-# обновляет приложение
-
 # Tested at:
 # Ubuntu 16.04
 # Ubuntu 18.04
 
 ---
-- name: Update app
+- name: Setup telegraf
   hosts: vpn
   sudo: yes
 
