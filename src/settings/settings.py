@@ -33,6 +33,14 @@ HOST = '127.0.0.1'
 
 PORT = 5000
 
+SERVER_ID = 'change_me_im_server_id'
+CLUSTER_ID = 'change_me_im_cluster_id'
+
+VPNMANAGER_HOST = '127.0.0.1'
+VPNMANAGER_API_URL = 'http://{}/jsonrpc'.format(VPNMANAGER_HOST)
+VPNMANAGER_LOGIN = 'WHITE_LABEL_1'
+VPNMANGER_PASSWORD = 'WHITE_LABEL_1'
+
 DATABASE = {
     'redis': {
         'dbms': 'redis',

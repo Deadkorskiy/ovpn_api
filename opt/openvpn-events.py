@@ -9,6 +9,7 @@ import logging
 import uuid
 import json
 from src.libs.db_gateway import get_db_gateway
+from src.settings import settings
 from enum import Enum
 
 logger = logging.getLogger('openvpn_client_event')
@@ -24,6 +25,8 @@ class ClientConnectionEvent(object):
         # сервисные эвенты openvpn
         UP = 'up'
         DOWN = 'down'
+        # Тестовый тип для запуска скрипта вне окружения OpenVPN
+        TEST = 'test_type'
 
     def __init__(self):
         self.redis = get_db_gateway('redis')
@@ -31,6 +34,8 @@ class ClientConnectionEvent(object):
     @staticmethod
     def get_client_info() -> dict:
         return {
+            'server_id': settings.SERVER_ID,
+            'cluster_id': settings.CLUSTER_ID,
             'action': os.getenv('script-type', None),
             'common_name': os.getenv('common_name', None),
             'ip': os.getenv('trusted_ip', None),
@@ -41,20 +46,20 @@ class ClientConnectionEvent(object):
         }
 
     def handle(self):
-        event_type = os.getenv('script_type', None)
+        event_type = os.getenv('script_type', 'test_type')
 
         try:
             event_type = self.EventTypes(event_type)
         except ValueError:
             # Для дебага скрипта
             logging.warning('Wrong script type action')
-            return
 
         options = {
             'client-connect': self.on_connect,
             'client-disconnect': self.on_disconnect,
             'up': self.on_up,
-            'down': self.on_down
+            'down': self.on_down,
+            'test_type': self.test_event
         }
         options[event_type.value]()
 
@@ -78,8 +83,13 @@ class ClientConnectionEvent(object):
     def on_down(self):
         pass
 
+    def test_event(self):
+        # Тестовый эвент, для запуска скрипта вне опенвпн окружения
+        self.enqueue(self.get_client_info())
+
 if __name__ == '__main__':
-    ClientConnectionEvent().handle()
+    for _ in range(100):
+        ClientConnectionEvent().handle()
 
 
 """
