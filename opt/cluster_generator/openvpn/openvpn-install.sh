@@ -101,16 +101,17 @@ else
 	rm -rf ~/easyrsa.tgz
 	cd /etc/openvpn/easy-rsa/
 
-	# Prepare CA vars
+	# Prepare CA vars # SETUP THIS
 	cp vars.example vars
 	echo 'set_var EASYRSA_DN "org"' >> vars
     echo 'set_var EASYRSA_KEY_SIZE 2048' >> vars
-    echo 'set_var EASYRSA_REQ_COUNTRY "PA"' >> vars
-    echo 'set_var EASYRSA_REQ_PROVINCE "PANAMA"' >> vars
-    echo 'set_var EASYRSA_REQ_CITY "PANAMA"' >> vars
-    echo 'set_var EASYRSA_REQ_ORG "OneTimeVPN"' >> vars
-    echo 'set_var EASYRSA_REQ_OU "OneTimeVPN"' >> vars
-    echo 'set_var EASYRSA_REQ_EMAIL "ca@onetimevpn.com"' >> vars
+    echo 'set_var EASYRSA_REQ_COUNTRY "CY"' >> vars
+    echo 'set_var EASYRSA_REQ_PROVINCE "Nicosia"' >> vars
+    echo 'set_var EASYRSA_REQ_CITY "Nicosia"' >> vars
+    echo 'set_var EASYRSA_REQ_ORG "RelloLabsLtd"' >> vars
+    echo 'set_var EASYRSA_REQ_CN "SafeLineVPN"' >> vars
+    echo 'set_var EASYRSA_REQ_OU "IT"' >> vars
+    echo 'set_var EASYRSA_REQ_EMAIL "servers@safelinevpn.com"' >> vars
 
 	# Create the PKI, set up the CA, the DH params and the server + client certificates
 	./easyrsa init-pki

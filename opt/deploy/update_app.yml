@@ -6,7 +6,7 @@
 
 ---
 - name: Update app
-  hosts: c1
+  hosts: vpn
   sudo: yes
 
   pre_tasks:

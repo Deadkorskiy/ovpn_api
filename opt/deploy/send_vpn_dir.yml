@@ -8,7 +8,7 @@
 
 ---
 - name: Sending vpn cluster data
-  hosts: c1
+  hosts: $hosts # ansible-playbook -u root --extra-vars="hosts=myhostname" # https://k4ml.me/posts/ansible-playbook-specify-hosts-on-the-command-line.html
   tasks:
     - name: send openvpn installation script
       sudo: yes
@@ -56,3 +56,4 @@
       sudo: no
       delegate_to: 127.0.0.1
       raw: "rm {{ vpn_data_src_dir }}/vpn.tar.gz"
+      run_once: true
