@@ -46,13 +46,14 @@ class ClientConnectionEvent(object):
         }
 
     def handle(self):
-        event_type = os.getenv('script_type', 'test_type')
+        event_type = os.getenv('script_type', None)
 
         try:
             event_type = self.EventTypes(event_type)
         except ValueError:
             # Для дебага скрипта
             logging.warning('Wrong script type action')
+            event_type = 'test_type'
 
         options = {
             'client-connect': self.on_connect,
@@ -88,8 +89,7 @@ class ClientConnectionEvent(object):
         self.enqueue(self.get_client_info())
 
 if __name__ == '__main__':
-    for _ in range(100):
-        ClientConnectionEvent().handle()
+    ClientConnectionEvent().handle()
 
 
 """
