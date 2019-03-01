@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.abspath(os.path.join(__file__, '../../../../')))
+sys.path.append(os.path.abspath(os.path.join(__file__, '../')))
 from src.settings import settings
 sys.path.append(settings.SRC_ROOT)
 
@@ -26,7 +26,6 @@ def __get_celery_application__() -> Celery:
     __CELERY__APPLICATION__.conf.timezone = 'UTC'
 
     return __get_celery_application__()
-
 
 celery_app = __get_celery_application__()
 
