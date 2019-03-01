@@ -37,9 +37,9 @@ SERVER_ID = 'change_me_im_server_id'
 CLUSTER_ID = 'change_me_im_cluster_id'
 
 VPNMANAGER_HOST = '127.0.0.1'
-VPNMANAGER_API_URL = 'http://{}/jsonrpc'.format(VPNMANAGER_HOST)
-VPNMANAGER_LOGIN = 'WHITE_LABEL_1'
-VPNMANGER_PASSWORD = 'WHITE_LABEL_1'
+VPNMANAGER_API_URL = 'http://{}/jsonrpcapi'.format(VPNMANAGER_HOST)
+VPNMANAGER_LOGIN = 'SYS_VPN_CONNECTION_HEALTH'
+VPNMANGER_PASSWORD = '986bd1c2-dcd2-40fe-8c30-2cf34fde701d'
 
 DATABASE = {
     'redis': {
