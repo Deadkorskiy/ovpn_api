@@ -51,6 +51,20 @@ DATABASE = {
     }
 }
 
+CELERY_BROKER = 'redis://localhost:6379/0'
+
+CELERY_INCLUDE = [
+    'src.task',
+    'src.job'
+]
+
+CELERY_BEAT_SCHEDULE = {
+    'job': {
+        'task': 'src.job',
+        'schedule': float(30)
+    }
+}
+
 BUILD_INFO = {
     'commit': None,
     'datetime': None,
