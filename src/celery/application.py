@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.abspath(os.path.join(__file__, '../')))
+sys.path.append(os.path.abspath(os.path.join(__file__, '../../')))
 from src.settings import settings
 sys.path.append(settings.SRC_ROOT)
 
@@ -28,9 +28,3 @@ def __get_celery_application__() -> Celery:
     return __get_celery_application__()
 
 celery_app = __get_celery_application__()
-
-
-@celery_app.task(bind=True)
-def debug_task(self):
-    print('Request: {0!r}'.format(self.request))
-

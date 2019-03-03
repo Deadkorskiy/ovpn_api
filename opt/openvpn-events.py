@@ -53,14 +53,13 @@ class ClientConnectionEvent(object):
         except ValueError:
             # Для дебага скрипта
             logging.warning('Wrong script type action')
-            event_type = 'test_type'
+            return self.test_event()
 
         options = {
             'client-connect': self.on_connect,
             'client-disconnect': self.on_disconnect,
             'up': self.on_up,
             'down': self.on_down,
-            'test_type': self.test_event
         }
         options[event_type.value]()
 
@@ -89,7 +88,8 @@ class ClientConnectionEvent(object):
         self.enqueue(self.get_client_info())
 
 if __name__ == '__main__':
-    ClientConnectionEvent().handle()
+    for _ in range(100):
+        ClientConnectionEvent().handle()
 
 
 """

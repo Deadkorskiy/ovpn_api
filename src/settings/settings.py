@@ -54,13 +54,12 @@ DATABASE = {
 CELERY_BROKER = 'redis://localhost:6379/0'
 
 CELERY_INCLUDE = [
-    'src.task',
-    'src.job'
+    'src.celery.jobs.jobs'
 ]
 
 CELERY_BEAT_SCHEDULE = {
-    'job': {
-        'task': 'src.job',
+    'send_openvpn_events_to_manager': {
+        'task': 'src.celery.jobs.jobs.send_openvpn_events',
         'schedule': float(30)
     }
 }
