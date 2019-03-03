@@ -33,6 +33,14 @@ HOST = '127.0.0.1'
 
 PORT = 5000
 
+SERVER_ID = 'change_me_im_server_id'
+CLUSTER_ID = 'change_me_im_cluster_id'
+
+VPNMANAGER_HOST = '127.0.0.1'
+VPNMANAGER_API_URL = 'http://{}/jsonrpcapi'.format(VPNMANAGER_HOST)
+VPNMANAGER_LOGIN = 'SYS_VPN_CONNECTION_HEALTH'
+VPNMANGER_PASSWORD = '986bd1c2-dcd2-40fe-8c30-2cf34fde701d'
+
 DATABASE = {
     'redis': {
         'dbms': 'redis',
@@ -40,6 +48,19 @@ DATABASE = {
         'port': 6379,
         'db': 1,
         'password': 'c1_redis_master_password'
+    }
+}
+
+CELERY_BROKER = 'redis://localhost:6379/0'
+
+CELERY_INCLUDE = [
+    'src.celery.jobs.jobs'
+]
+
+CELERY_BEAT_SCHEDULE = {
+    'send_openvpn_events_to_manager': {
+        'task': 'src.celery.jobs.jobs.send_openvpn_events',
+        'schedule': float(30)
     }
 }
 
