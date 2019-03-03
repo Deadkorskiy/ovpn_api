@@ -7,26 +7,30 @@ from fabric.api import settings as fabric_settings
 import uuid
 from ...utils import shell_cmd
 import telnetlib
-
+import socket
 openvpn_management_bp = Blueprint('openvpn_management_bp', __name__, url_prefix='/api/openvpn/management')
 
 
 @openvpn_management_bp.route('/load-all-user-stats/', methods=['POST'])
 @auth_required
 def load_all_user_stats():
+
     host, port = settings.OPENVPN_TELNET_MANAGEMENT.split()
-
-    tn = telnetlib.Telnet(
-        host=host,
-        port=port
-    )
-    tn.write(b'status 3\n')
-
-    data = ''
-
-    while data.find('END') == -1:
-        data = tn.read_very_eager()
-    tn.close()
+    try:
+        telnet_context = telnetlib.Telnet(
+            host=host,
+            port=port
+        )
+        with telnet_context as tn:
+            tn.write(b'status 3\n')
+            data = b''
+            while data.find(b'END') == -1:
+                data = tn.read_very_eager()
+    except (socket.timeout, EOFError) as e:
+        return json_custom_response(
+            errors_occured=[{'message': 'Failed to execute telnet routine', 'Internal error': str(e)}],
+            code=500
+        )
 
     def split(input_data: str) -> iter:
         return iter(input_data.splitlines())
@@ -47,9 +51,16 @@ def load_all_user_stats():
 
     try:
         parsed_data = []
-        for line in split(data):
+        for line in split(data.decode('utf-8')):
             if 'CLIENT_LIST' in line and "HEADER" not in line:
-                parsed_data.append(parse_client(line))
+                client = parse_client(line)
+                # В некоторых случаях, в консоли управления остаются висеть мертвые подключения
+                # Скорее всего это те подключения, которые были завершены не graceful
+                # Пропускаем таких клиентов, так как они не несут никакой смысловой нагрузки
+                # Также такое имя может означать, что клиент находится в стадии подключения
+                # и еще не установил соединение
+                if client.get('common_name') != 'UNDEF':
+                    parsed_data.append(client)
         return json_custom_response(
             data={
                 'client_list': parsed_data
