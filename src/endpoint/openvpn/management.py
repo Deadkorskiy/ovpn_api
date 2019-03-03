@@ -6,9 +6,73 @@ from src.utils import json_custom_response, auth_required
 from fabric.api import settings as fabric_settings
 import uuid
 from ...utils import shell_cmd
-
-
+import telnetlib
+import socket
 openvpn_management_bp = Blueprint('openvpn_management_bp', __name__, url_prefix='/api/openvpn/management')
+
+
+@openvpn_management_bp.route('/load-all-user-stats/', methods=['POST'])
+@auth_required
+def load_all_user_stats():
+
+    host, port = settings.OPENVPN_TELNET_MANAGEMENT.split()
+    try:
+        telnet_context = telnetlib.Telnet(
+            host=host,
+            port=port
+        )
+        with telnet_context as tn:
+            tn.write(b'status 3\n')
+            data = b''
+            while data.find(b'END') == -1:
+                data = tn.read_very_eager()
+    except (socket.timeout, EOFError) as e:
+        return json_custom_response(
+            errors_occured=[{'message': 'Failed to execute telnet routine', 'Internal error': str(e)}],
+            code=500
+        )
+
+    def split(input_data: str) -> iter:
+        return iter(input_data.splitlines())
+
+    def parse_client(input_line: str) -> dict:
+        input_line = input_line.split()
+        client_info = {
+                'common_name': input_line[1],
+                'real_address': input_line[2],
+                'virtual_address': input_line[3],
+                'bytes_sent': input_line[4],
+                'bytes_received': input_line[5],
+                'connected_since': input_line[11],
+                'client_id': input_line[-2:][0],
+                'client_peer': input_line[-2:][1]
+        }
+        return client_info
+
+    try:
+        parsed_data = []
+        for line in split(data.decode('utf-8')):
+            if 'CLIENT_LIST' in line and "HEADER" not in line:
+                client = parse_client(line)
+                # В некоторых случаях, в консоли управления остаются висеть мертвые подключения
+                # Скорее всего это те подключения, которые были завершены не graceful
+                # Пропускаем таких клиентов, так как они не несут никакой смысловой нагрузки
+                # Также такое имя может означать, что клиент находится в стадии подключения
+                # и еще не установил соединение
+                if client.get('common_name') != 'UNDEF':
+                    parsed_data.append(client)
+        return json_custom_response(
+            data={
+                'client_list': parsed_data
+            },
+            code=200
+        )
+    except IndexError as e:
+        logging.getLogger(__file__).error('Error during load all client stats: {}'.format(e))
+        return json_custom_response(
+            errors_occured=[{'message': 'Load all clients stats error', 'Internal error': str(e)}],
+            code=500
+        )
 
 
 @openvpn_management_bp.route("/load-stats/", methods=['POST'])

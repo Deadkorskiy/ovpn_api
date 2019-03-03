@@ -14,7 +14,7 @@ def get_application() -> Flask:
 
     __APPLICATION__ = Flask(__name__)
     __APPLICATION__.url_map.strict_slashes = False
-    __APPLICATION__secret_key = settings.SECRET_KEY
+    __APPLICATION__.secret_key = settings.SECRET_KEY
     __APPLICATION__.wsgi_app = ProxyFix(__APPLICATION__.wsgi_app)
     return get_application()
 
